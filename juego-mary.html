@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>un jueguito para vos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Paleta — cambiá --cherry por el hex exacto del pelo si lo tenés */
+    --ink: #1c1620;
+    --ink-2: #241b29;
+    --paper: #ede6d8;
+    --paper-2: #e2dbcb;
+    --cherry: #d6294b;
+    --cherry-dark: #a81f3c;
+    --mustard: #e8a33d;
+    --plum: #6b4c6b;
+    --text-soft: #cbc2c9;
+    --text-dark: #241b29;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(214,41,75,0.10), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(232,163,61,0.08), transparent 45%),
+      var(--ink);
+    color: var(--text-soft);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 24px 16px;
+    overflow-x:hidden;
+  }
+  .stage{ width:100%; max-width:480px; position:relative; }
+  .screen{ display:none; animation: fadeUp .5s ease; }
+  .screen.active{ display:block; }
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--mustard);
+    display:block;
+    margin-bottom: 10px;
+  }
+  h1{
+    font-family:'Anton', sans-serif;
+    font-weight:400;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    line-height: 0.95;
+    color: var(--paper);
+    font-size: clamp(38px, 10vw, 54px);
+  }
+  h1 span{ color: var(--cherry); }
+  p.lead{ color: var(--text-soft); font-size:15px; line-height:1.5; margin-top:14px; }
+
+  /* --- COVER --- */
+  .cover-card{
+    background: var(--ink-2);
+    border: 1px solid rgba(237,230,216,0.1);
+    border-radius: 18px;
+    padding: 34px 26px;
+    position:relative;
+    overflow:hidden;
+  }
+  .cover-card::before{
+    content:"";
+    position:absolute; top:-40px; right:-40px;
+    width:140px; height:140px; border-radius:50%;
+    background: var(--cherry);
+    opacity:0.18;
+  }
+  .ticket-strip{
+    display:flex; gap:6px; margin-top:22px; flex-wrap:wrap;
+  }
+  .tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    border:1px solid rgba(237,230,216,0.25);
+    color: var(--text-soft);
+    padding:5px 10px;
+    border-radius:999px;
+  }
+  button{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    border:none;
+    cursor:pointer;
+    border-radius: 12px;
+    padding: 15px 22px;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  button:active{ transform: scale(0.97); }
+  .btn-primary{
+    background: var(--cherry);
+    color: var(--paper);
+    width:100%;
+    margin-top:26px;
+    box-shadow: 0 6px 0 var(--cherry-dark);
+  }
+  .btn-primary:active{ box-shadow: 0 2px 0 var(--cherry-dark); transform: translateY(4px) scale(0.99); }
+  .btn-ghost{
+    background: transparent;
+    border: 1px solid rgba(237,230,216,0.3);
+    color: var(--paper);
+  }
+
+  /* --- HUD --- */
+  .hud{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom: 18px;
+  }
+  .score{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    color: var(--mustard);
+    font-size: 14px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .dots{ display:flex; gap:5px; }
+  .dot{
+    width:9px; height:9px; border-radius:50%;
+    background: rgba(237,230,216,0.15);
+    border:1px solid rgba(237,230,216,0.25);
+  }
+  .dot.filled{ background: var(--mustard); border-color: var(--mustard); }
+
+  /* --- CORKBOARD --- */
+  .corkboard{
+    background:
+      repeating-linear-gradient(45deg, rgba(0,0,0,0.03) 0 2px, transparent 2px 6px),
+      var(--plum);
+    border-radius: 16px;
+    padding: 14px;
+    min-height: 92px;
+    display:flex; flex-wrap:wrap; gap:8px; align-content:flex-start;
+    margin-bottom: 18px;
+  }
+  .patch{
+    background: var(--paper);
+    color: var(--text-dark);
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    line-height:1.3;
+    padding: 8px 9px;
+    border-radius: 4px;
+    max-width: 128px;
+    transform: rotate(var(--r,-2deg));
+    box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+    border-left: 3px solid var(--cherry);
+    animation: pin .4s ease;
+  }
+  @keyframes pin{ from{ transform: scale(0.4) rotate(0deg); opacity:0;} to{ transform: scale(1) rotate(var(--r,-2deg)); opacity:1;} }
+  .patch b{ display:block; color:var(--cherry-dark); font-size:9px; text-transform:uppercase; margin-bottom:3px; }
+
+  /* --- QUESTION CARD --- */
+  .qcard{
+    background: var(--paper);
+    color: var(--text-dark);
+    border-radius: 18px;
+    padding: 26px 22px;
+    position:relative;
+  }
+  .qcard::after{
+    content:"";
+    position:absolute; left:22px; right:22px; bottom:-8px; height:8px;
+    background: var(--paper-2);
+    border-radius: 0 0 14px 14px;
+    z-index:-1;
+  }
+  .qnum{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing:1.5px;
+    color: var(--cherry-dark);
+    text-transform:uppercase;
+  }
+  .qtext{
+    font-family:'Anton', sans-serif;
+    font-weight:400;
+    font-size: 24px;
+    line-height:1.15;
+    margin-top:8px;
+    text-transform: none;
+  }
+  textarea{
+    width:100%;
+    margin-top:18px;
+    border-radius: 10px;
+    border: 1.5px solid #d3c9b8;
+    background: #fbf8f2;
+    padding: 12px;
+    font-family:'Space Grotesk', sans-serif;
+    font-size: 14px;
+    resize:none;
+    min-height: 70px;
+  }
+  textarea:focus{ outline:none; border-color: var(--cherry); }
+  .qcard .btn-primary{ margin-top:16px; }
+  .skip{
+    display:block; text-align:center; margin-top:14px;
+    font-family:'JetBrains Mono', monospace; font-size:11px;
+    color: var(--cherry-dark); background:none; border:none;
+    text-decoration: underline; cursor:pointer; padding: 6px;
+  }
+
+  /* --- REWARD CARDS --- */
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px; }
+  .flip{ perspective: 800px; height: 128px; }
+  .flip-inner{
+    position:relative; width:100%; height:100%;
+    transition: transform .5s cubic-bezier(.2,.8,.2,1);
+    transform-style: preserve-3d; cursor:pointer;
+  }
+  .flip.selected .flip-inner{ transform: rotateY(180deg); }
+  .face{
+    position:absolute; inset:0; backface-visibility:hidden;
+    border-radius:14px; padding:12px;
+    display:flex; flex-direction:column; justify-content:center;
+  }
+  .face.front{
+    background: var(--ink-2);
+    border: 1px solid rgba(237,230,216,0.15);
+    align-items:center; text-align:center; gap:6px;
+  }
+  .face.front .ico{ font-size:26px; }
+  .face.front .name{ font-family:'Anton'; font-size:15px; color:var(--paper); text-transform:uppercase; }
+  .face.back{
+    background: var(--mustard);
+    color: var(--text-dark);
+    transform: rotateY(180deg);
+    font-size: 11.5px; line-height:1.35;
+    font-family:'Space Grotesk';
+  }
+  .flip.locked-in{ outline: 3px solid var(--cherry); outline-offset:2px; border-radius:16px; }
+
+  /* --- DATE/TIME --- */
+  .dt-row{ display:flex; gap:10px; margin-top:16px; }
+  .dt-field{ flex:1; }
+  .dt-field label{
+    display:block; font-family:'JetBrains Mono', monospace; font-size:10px;
+    letter-spacing:1px; text-transform:uppercase; color: var(--text-dark); opacity:0.6; margin-bottom:5px;
+  }
+  .dt-field input{
+    width:100%; border-radius:10px; border:1.5px solid #d3c9b8;
+    background:#fbf8f2; padding:10px; font-family:'Space Grotesk'; font-size:14px; color:var(--text-dark);
+  }
+
+  /* --- CONFIRMATION --- */
+  .ticket{
+    background: var(--paper);
+    color: var(--text-dark);
+    border-radius: 16px;
+    padding: 28px 22px;
+    text-align:center;
+    position:relative;
+  }
+  .ticket .stub-line{
+    border-top: 2px dashed #c9bfa9;
+    margin: 18px -22px;
+  }
+  .ticket h2{ font-family:'Anton'; font-size:26px; text-transform:uppercase; color:var(--cherry-dark); }
+  .ticket .plan{ font-family:'JetBrains Mono', monospace; font-size:13px; margin-top:10px; }
+
+  .footer-note{
+    text-align:center; margin-top:18px; font-size:11px; color: rgba(237,230,216,0.35);
+    font-family:'JetBrains Mono', monospace;
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <!-- SCREEN 1: COVER -->
+  <div class="screen active" id="screen-cover">
+    <div class="cover-card">
+      <span class="eyebrow">nivel 1 · desbloqueá una cita</span>
+      <h1>un juego<br><span>solo para tí</span></h1>
+      <p class="lead">Contesta algunas preguntas — no importa qué digas, siempre sumas puntos. Cuando juntes suficientes, elígess tu misma la cita.</p>
+      <div class="ticket-strip">
+        <span class="tag">preguntas al azar</span>
+        <span class="tag">tu eligess el premio</span>
+      </div>
+      <button class="btn-primary" onclick="goTo('screen-play')">Empezar »</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: PLAY -->
+  <div class="screen" id="screen-play">
+    <div class="hud">
+      <div class="score">★ <span id="score-val">0</span> pts</div>
+      <div class="dots" id="dots"></div>
+    </div>
+    <div class="corkboard" id="corkboard"></div>
+    <div class="qcard" id="qcard">
+      <span class="qnum" id="qnum">pregunta</span>
+      <div class="qtext" id="qtext">—</div>
+      <textarea id="answer" placeholder="escribí lo que quieras..."></textarea>
+      <button class="btn-primary" onclick="submitAnswer()">Guardar y sumar puntos</button>
+      <button class="skip" onclick="skipQuestion()">paso esta, dame otra</button>
+    </div>
+    <div class="footer-note" id="unlock-note"></div>
+  </div>
+
+  <!-- SCREEN 3: REWARD SELECT -->
+  <div class="screen" id="screen-reward">
+    <span class="eyebrow">nivel 2 · elegí tu premio</span>
+    <h1 style="font-size:30px;">Elegí la <span>cita</span></h1>
+    <p class="lead">Toca una carta para darla vuelta. Cuando encuentres la que quieras, tocala de nuevo para confirmarla.</p>
+    <div class="grid" id="reward-grid"></div>
+    <button class="btn-primary" id="btn-continue" style="display:none" onclick="goTo('screen-datetime')">Continuar »</button>
+  </div>
+
+  <!-- SCREEN 4: DATE/TIME -->
+  <div class="screen" id="screen-datetime">
+    <span class="eyebrow">nivel 3 · último paso</span>
+    <h1 style="font-size:30px;">Elige <span>día y hora</span></h1>
+    <div class="qcard" style="margin-top:18px;">
+      <div class="dt-row">
+        <div class="dt-field">
+          <label>Fecha</label>
+          <input type="date" id="date-input">
+        </div>
+        <div class="dt-field">
+          <label>Hora</label>
+          <input type="time" id="time-input">
+        </div>
+      </div>
+      <button class="btn-primary" onclick="confirmDate()">Confirmar cita</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 5: CONFIRM -->
+  <div class="screen" id="screen-confirm">
+    <div class="ticket">
+      <span class="eyebrow" style="color:var(--cherry-dark);">entrada confirmada</span>
+      <h2 id="confirm-plan">—</h2>
+      <div class="stub-line"></div>
+      <div class="plan" id="confirm-datetime">—</div>
+      <div class="plan" style="margin-top:14px; opacity:0.7;">nos vemos ahí ♥</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const QUESTIONS = [
+  {tag:"colores", text:"¿Cuál es tu color favorito, y por qué justo ese?"},
+  {tag:"pokémon", text:"¿Cuál o cuáles son tus Pokémones favoritos?"},
+  {tag:"anécdota", text:"Cuentame algo gracioso que te haya pasado últimamente."},
+  {tag:"cosplay", text:"Si pudieras cosplayear cualquier personaje sin límite de presupuesto, ¿cuál sería?"},
+  {tag:"anime", text:"Un anime que recomendarías a ciegas, sin dar spoilers."},
+  {tag:"tattoos", text:"¿Cuál es tu tatuaje favorito de los que tienes, y qué significa?"},
+  {tag:"cocina", text:"¿Cuál es el plato que mejor te sale cocinando?"},
+  {tag:"tragos", text:"Bebida o trago favorito para una noche tranquila."},
+  {tag:"mascotas", text:"¿Cuál de tus mascotas es más quilombera?"},
+  {tag:"terror", text:"Una película de terror folclórico o de sectas que te haya volado la cabeza."},
+  {tag:"música", text:"Una banda que me recomendarías"},
+  {tag:"día ideal", text:"Contame tu día libre perfecto, de principio a fin."},
+  {tag:"random", text:"¿Qué cosa random tienes siempre en tu bolso o mochila?"},
+  {tag:"miedos", text:"Un miedo random que tengas (no vale 'las arañas', ya sabemos jaja)."},
+  {tag:"apodos", text:"¿Qué apodo random tuviste de más chica?"},
+  {tag:"mario kart", text:"Si tuvieras que elegir un personaje de Mario Kart para representarte, ¿cuál sería?"}
+];
+
+const REWARDS = [
+  {ico:"🧉", name:"Mate", back:"Una tarde tranqui, charla larga y termo que nunca se vacía."},
+  {ico:"🧺", name:"Picnic", back:"Manta en el pasto, algo rico para picotear y sol de fondo."},
+  {ico:"🖼️", name:"Museo", back:"Recorrer salas buscando la excusa perfecta para una foto rara."},
+  {ico:"🎬", name:"Ver pelis", back:"Sofá, algo de terror folclórico y comentarios por lo bajo."},
+  {ico:"🎮", name:"Jugar algo", back:"Switch, algo de Mario Kart, y revancha asegurada."}
+];
+
+const NEEDED_POINTS = 60;
+const POINTS_PER_Q = 15;
+
+let state = { answered: {}, points: 0, currentQ: null, selectedReward: null };
+
+async function safeGet(key){
+  try{
+    const r = await window.storage.get(key, false);
+    return r ? JSON.parse(r.value) : null;
+  }catch(e){ return null; }
+}
+async function safeSet(key, value){
+  try{ await window.storage.set(key, JSON.stringify(value), false); }
+  catch(e){ /* no storage available, running standalone — fine, state stays in memory */ }
+}
+
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function renderDots(){
+  const dotsEl = document.getElementById('dots');
+  dotsEl.innerHTML = '';
+  const totalDots = Math.ceil(NEEDED_POINTS / POINTS_PER_Q);
+  const filled = Math.floor(state.points / POINTS_PER_Q);
+  for(let i=0;i<totalDots;i++){
+    const d = document.createElement('div');
+    d.className = 'dot' + (i < filled ? ' filled' : '');
+    dotsEl.appendChild(d);
+  }
+}
+
+function pickQuestion(){
+  const pool = QUESTIONS.filter(q => !state.answered[q.text]);
+  if(pool.length === 0){
+    document.getElementById('qnum').textContent = 'sin preguntas nuevas';
+    document.getElementById('qtext').textContent = 'Ya me contaste todo lo que tenía guardado — pedile que piense preguntas nuevas.';
+    document.getElementById('answer').style.display='none';
+    document.querySelector('#qcard .btn-primary').style.display='none';
+    document.querySelector('.skip').style.display='none';
+    return;
+  }
+  const q = pool[Math.floor(Math.random()*pool.length)];
+  state.currentQ = q;
+  document.getElementById('qnum').textContent = q.tag;
+  document.getElementById('qtext').textContent = q.text;
+  document.getElementById('answer').value = '';
+}
+
+function addPatch(question, answer){
+  const board = document.getElementById('corkboard');
+  const patch = document.createElement('div');
+  patch.className = 'patch';
+  patch.style.setProperty('--r', (Math.random()*8-4)+'deg');
+  const shortAns = answer.length > 60 ? answer.slice(0,60)+'…' : answer;
+  patch.innerHTML = `<b>${question.tag}</b>${shortAns || '(sin respuesta escrita)'}`;
+  board.appendChild(patch);
+}
+
+async function submitAnswer(){
+  const val = document.getElementById('answer').value.trim();
+  const q = state.currentQ;
+  state.answered[q.text] = val || true;
+  state.points += POINTS_PER_Q;
+  document.getElementById('score-val').textContent = state.points;
+  addPatch(q, val);
+  renderDots();
+  await safeSet('mary-game-state', state);
+
+  const note = document.getElementById('unlock-note');
+  if(state.points >= NEEDED_POINTS){
+    note.textContent = '¡ya podés ir por tu premio! seguí jugando o pasá a elegir la cita.';
+    if(!document.getElementById('go-reward-btn')){
+      const btn = document.createElement('button');
+      btn.id = 'go-reward-btn';
+      btn.className = 'btn-primary';
+      btn.style.marginTop = '10px';
+      btn.textContent = 'Elegir mi cita »';
+      btn.onclick = () => goTo('screen-reward');
+      document.getElementById('screen-play').appendChild(btn);
+    }
+  } else {
+    note.textContent = `${NEEDED_POINTS - state.points} puntos más para desbloquear tu cita.`;
+  }
+  pickQuestion();
+}
+
+function skipQuestion(){ pickQuestion(); }
+
+function renderRewards(){
+  const grid = document.getElementById('reward-grid');
+  grid.innerHTML = '';
+  REWARDS.forEach((r, i) => {
+    const flip = document.createElement('div');
+    flip.className = 'flip';
+    flip.dataset.index = i;
+    flip.innerHTML = `
+      <div class="flip-inner">
+        <div class="face front"><div class="ico">${r.ico}</div><div class="name">${r.name}</div></div>
+        <div class="face back">${r.back}</div>
+      </div>`;
+    flip.addEventListener('click', () => handleRewardClick(flip, i));
+    grid.appendChild(flip);
+  });
+}
+
+function handleRewardClick(flip, i){
+  if(state.selectedReward === i){
+    document.getElementById('btn-continue').style.display = 'block';
+    return;
+  }
+  document.querySelectorAll('.flip').forEach(f=>f.classList.remove('selected','locked-in'));
+  flip.classList.add('selected');
+  state.selectedReward = i;
+  flip.classList.add('locked-in');
+  document.getElementById('btn-continue').style.display = 'block';
+}
+
+function confirmDate(){
+  const date = document.getElementById('date-input').value;
+  const time = document.getElementById('time-input').value;
+  if(!date || !time){ alert('Elegí fecha y hora para confirmar.'); return; }
+  const reward = REWARDS[state.selectedReward];
+  document.getElementById('confirm-plan').textContent = reward.name;
+  const d = new Date(date+'T'+time);
+  const opts = { weekday:'long', day:'numeric', month:'long' };
+  const dateStr = d.toLocaleDateString('es-ES', opts);
+  document.getElementById('confirm-datetime').textContent = `${dateStr} · ${time}hs`;
+  safeSet('mary-game-final', { reward: reward.name, date, time });
+  goTo('screen-confirm');
+}
+
+(async function init(){
+  const saved = await safeGet('mary-game-state');
+  if(saved){
+    state = saved;
+    document.getElementById('score-val').textContent = state.points;
+    Object.keys(state.answered).forEach(qText => {
+      const q = QUESTIONS.find(x=>x.text===qText);
+      if(q) addPatch(q, typeof state.answered[qText]==='string' ? state.answered[qText] : '');
+    });
+  }
+  renderDots();
+  pickQuestion();
+  renderRewards();
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('date-input').min = today;
+})();
+</script>
+</body>
+</html>
