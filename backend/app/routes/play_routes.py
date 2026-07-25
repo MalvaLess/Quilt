@@ -69,12 +69,15 @@ def start_or_resume(
 def get_next_module(token: str, db: Session = Depends(get_db)):
     player = get_player_or_404(token, db)
     answered_ids = {a.question_id for a in player.answers}
+    skipped_ids = {a.question_id for a in player.answers if a.skipped}
 
     threshold = player.experience.reward_threshold
 
     for module in player.experience.modules:
         if module.type == "question":
             for q in module.questions:
+                if q.id in skipped_ids:
+                    continue
                 if q.repeatable or q.id not in answered_ids:
                     return {
                         "module_type": "question",
