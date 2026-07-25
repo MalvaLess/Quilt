@@ -6,6 +6,8 @@ class QuestionCreate(BaseModel):
     input_type: str = "text"
     points: int = 15
     options: list[str] | None = None
+    repeatable: bool = False
+    image_id: int | None = None
 
 
 class RewardOptionCreate(BaseModel):
@@ -13,6 +15,8 @@ class RewardOptionCreate(BaseModel):
     description: str | None = None
     icon: str | None = None
     order_index: int = 0
+    unlock_points: int | None = None
+    requires_datetime: bool = False
 
 
 class ModuleCreate(BaseModel):
@@ -20,3 +24,11 @@ class ModuleCreate(BaseModel):
     order_index: int = 0
     questions: list[QuestionCreate] = []
     reward_options: list[RewardOptionCreate] = []
+    custom_reward_limit: int | None = None
+
+
+class ModuleUpdate(BaseModel):
+    order_index: int | None = None
+    questions: list[QuestionCreate] | None = None
+    reward_options: list[RewardOptionCreate] | None = None
+    custom_reward_limit: int | None = None

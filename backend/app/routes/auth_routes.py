@@ -7,6 +7,7 @@ from app.services.auth_service import (
     hash_password,
     verify_password,
     create_access_token,
+    get_current_creator,
 )
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -34,3 +35,8 @@ def login(data: CreatorLogin, db: Session = Depends(get_db)):
         raise HTTPException(401, "Credenciales inválidas")
     token = create_access_token({"sub": str(creator.id)})
     return {"access_token": token}
+
+
+@router.get("/me", response_model=CreatorOut)
+def get_me(current_creator: Creator = Depends(get_current_creator)):
+    return current_creator

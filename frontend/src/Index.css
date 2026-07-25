@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+@theme {
+  --color-void: #150d21;
+  --color-void-2: #1e1330;
+  --color-raven: #4c2f7a;
+  --color-raven-light: #7c5cc7;
+  --color-indigo: #362159;
+  --color-gem: #b3273e;
+  --color-gem-dark: #8f1e30;
+  --color-parchment: #e9e2f5;
+  --color-parchment-dim: #b8aecf;
+  --color-mustard: #e8a33d;
+  --color-plum: #6b4c6b;
+
+  --font-display: "Cinzel", serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-sans: "Space Grotesk", sans-serif;
+}
+
+body {
+  background:
+    radial-gradient(circle at 15% 10%, rgba(214,41,75,0.10), transparent 40%),
+    radial-gradient(circle at 85% 90%, rgba(232,163,61,0.08), transparent 45%),
+    var(--color-void);
+  min-height: 100vh;
+}
+
+@keyframes pin {
+  from { transform: scale(0.4) rotate(0deg); opacity: 0; }
+  to { transform: scale(1) rotate(var(--r, -2deg)); opacity: 1; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.screen-enter {
+  animation: fadeUp 0.5s ease;
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-10px, 14px) scale(1.05); }
+}
+
+@keyframes floatSlowReverse {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(12px, -10px) scale(1.06); }
+}
+
+.glow-blob {
+  pointer-events: none;
+  filter: blur(30px);
+  animation: floatSlow 9s ease-in-out infinite;
+}
+
+.glow-blob-alt {
+  pointer-events: none;
+  filter: blur(30px);
+  animation: floatSlowReverse 11s ease-in-out infinite;
+}
+
+/*
+  IMPORTANTE: esto va en @layer utilities (no "components").
+  Tailwind v4 ordena las layers theme < base < components < utilities,
+  y una regla en "utilities" le gana en cascada a CUALQUIER utilidad de
+  Tailwind (border-white/20, bg-void-2, etc.) sin importar especificidad.
+  Si esto vuelve a "components", el :hover de estas clases queda tapado
+  por cualquier utilidad estática de color/borde que el botón ya tenga.
+*/
+@layer utilities {
+  /* Botones sólidos (bg-gem, bg-raven, etc.) */
+  .btn-fill {
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-fill:hover:not(:disabled) {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+  }
+  .btn-fill:active:not(:disabled) {
+    transform: translateY(0) scale(0.96);
+    filter: brightness(0.92);
+  }
+
+  /* Botones con borde / outline */
+  .btn-ghost {
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.45);
+  }
+  .btn-ghost:active:not(:disabled) {
+    transform: scale(0.97);
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+
+  /* Links de texto (subrayados, "cancelar", "volver", etc.) */
+  .btn-text {
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  .btn-text:hover:not(:disabled) {
+    opacity: 0.7;
+  }
+  .btn-text:active:not(:disabled) {
+    opacity: 0.5;
+  }
+
+  .btn-fill:disabled,
+  .btn-ghost:disabled,
+  .btn-text:disabled {
+    cursor: not-allowed;
+  }
+
+  /* Tarjetas/tiles clickeables (RewardCard, BuildRewardCard, botones de selección) */
+  .tile-interactive {
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .tile-interactive:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  }
+  .tile-interactive:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+  }
+
+  /* Iconos de acción (lápiz/tacho) dentro de tarjetas */
+  .icon-btn {
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  }
+  .icon-btn:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: scale(1.08);
+  }
+  .icon-btn:active:not(:disabled) {
+    transform: scale(0.92);
+  }
+}

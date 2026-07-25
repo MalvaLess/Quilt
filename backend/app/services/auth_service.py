@@ -1,7 +1,12 @@
 import os
 from datetime import datetime, timedelta
+from fastapi import Depends, Header, HTTPException
 from passlib.context import CryptContext
 from jose import jwt
+from sqlalchemy.orm import Session
+
+from app.database import get_db
+from app.models.creator import Creator
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -29,3 +34,20 @@ def decode_access_token(token: str) -> dict | None:
         return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except Exception:
         return None
+
+
+def get_current_creator(
+    authorization: str | None = Header(None), db: Session = Depends(get_db)
+) -> Creator:
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(401, "No autenticado")
+
+    token = authorization.removeprefix("Bearer ").strip()
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(401, "Token inválido o expirado")
+
+    creator = db.query(Creator).get(int(payload["sub"]))
+    if not creator:
+        raise HTTPException(401, "Creador no encontrado")
+    return creator

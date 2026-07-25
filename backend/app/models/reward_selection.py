@@ -7,13 +7,17 @@ class RewardSelection(Base):
     __tablename__ = "reward_selections"
 
     id = Column(Integer, primary_key=True)
-    play_session_id = Column(
-        Integer, ForeignKey("play_sessions.id"), unique=True, nullable=False
+    player_id = Column(Integer, ForeignKey("players.id"), nullable=False)
+    reward_option_id = Column(
+        Integer, ForeignKey("reward_options.id", ondelete="CASCADE"), nullable=True
     )
-    reward_option_id = Column(Integer, ForeignKey("reward_options.id"), nullable=False)
+    custom_reward_id = Column(
+        Integer, ForeignKey("custom_rewards.id", ondelete="CASCADE"), nullable=True
+    )
     chosen_date = Column(Date, nullable=True)
     chosen_time = Column(Time, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    play_session = relationship("PlaySession", back_populates="reward_selection")
+    player = relationship("Player", back_populates="reward_selections")
     reward_option = relationship("RewardOption")
+    custom_reward = relationship("CustomReward")

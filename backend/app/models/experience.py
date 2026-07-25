@@ -13,6 +13,7 @@ class Experience(Base):
     theme_color = Column(String)
     description = Column(String)
     status = Column(String, default="draft")
+    reward_threshold = Column(Integer, nullable=False, default=60, server_default="60")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     creator = relationship("Creator", back_populates="experiences")
@@ -22,6 +23,6 @@ class Experience(Base):
         cascade="all, delete-orphan",
         order_by="Module.order_index",
     )
-    play_sessions = relationship(
-        "PlaySession", back_populates="experience", cascade="all, delete-orphan"
+    players = relationship(
+        "Player", back_populates="experience", cascade="all, delete-orphan"
     )

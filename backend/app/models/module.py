@@ -10,6 +10,7 @@ class Module(Base):
     experience_id = Column(Integer, ForeignKey("experiences.id"), nullable=False)
     type = Column(String, nullable=False)  # question | minigame | reward_picker | info
     order_index = Column(Integer, nullable=False, default=0)
+    custom_reward_limit = Column(Integer, nullable=True)  # solo aplica a reward_picker; None/0 = deshabilitado
 
     experience = relationship("Experience", back_populates="modules")
     questions = relationship(
@@ -20,4 +21,7 @@ class Module(Base):
         back_populates="module",
         cascade="all, delete-orphan",
         order_by="RewardOption.order_index",
+    )
+    custom_rewards = relationship(
+        "CustomReward", back_populates="module", cascade="all, delete-orphan"
     )
