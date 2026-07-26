@@ -61,6 +61,27 @@ export default function DashboardPage() {
     setPlayers(data);
   };
 
+  const handleDeletePhoto = async (playerId, answerId, imageId) => {
+    if (!confirm("¿Borrar esta foto? No se puede deshacer.")) return;
+    try {
+      await api.deleteImage(imageId);
+      setPlayers((prev) =>
+        prev.map((p) =>
+          p.id !== playerId
+            ? p
+            : {
+                ...p,
+                answers: p.answers.map((a) =>
+                  a.id !== answerId ? a : { ...a, response_image_url: null },
+                ),
+              },
+        ),
+      );
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
   const handleUpdated = (updated) => {
     setSelectedExp(updated);
     setExperiences((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
@@ -263,6 +284,20 @@ export default function DashboardPage() {
                           <p className="text-parchment-dim font-mono text-xs">{a.prompt}</p>
                           {a.skipped ? (
                             <p className="text-parchment-dim italic">(saltada)</p>
+                          ) : a.response_image_url ? (
+                            <div className="flex items-center gap-2 mt-1">
+                              <img
+                                src={resolveImageUrl(a.response_image_url)}
+                                alt=""
+                                className="w-16 h-16 object-cover rounded-lg border border-white/20"
+                              />
+                              <button
+                                onClick={() => handleDeletePhoto(p.id, a.id, a.response_image_id)}
+                                className="btn-text text-xs text-gem underline"
+                              >
+                                borrar foto
+                              </button>
+                            </div>
                           ) : (
                             <p>{a.response}</p>
                           )}

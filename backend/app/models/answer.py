@@ -9,9 +9,11 @@ class Answer(Base):
     player_id = Column(Integer, ForeignKey("players.id"), nullable=False)
     question_id = Column(Integer, ForeignKey("questions.id"), nullable=False)
     response_text = Column(String)
+    response_image_id = Column(Integer, ForeignKey("uploaded_images.id"), nullable=True)
     points_awarded = Column(Integer, default=0)
     skipped = Column(Boolean, nullable=False, default=False, server_default="false")
     answered_at = Column(DateTime(timezone=True), server_default=func.now())
 
     player = relationship("Player", back_populates="answers")
     question = relationship("Question", back_populates="answers")
+    response_image = relationship("UploadedImage")

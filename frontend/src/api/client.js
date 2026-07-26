@@ -59,6 +59,12 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ question_id: questionId }),
     }),
+  submitPhotoAnswer: (token, questionId, file) => {
+    const formData = new FormData();
+    formData.append("question_id", questionId);
+    formData.append("file", file);
+    return uploadRequest(`/play/${token}/answers/photo`, formData);
+  },
   getRewards: (token) => request(`/play/${token}/rewards`),
   createCustomReward: (token, data) =>
     request(`/play/${token}/custom-rewards`, {

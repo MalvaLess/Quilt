@@ -45,5 +45,10 @@ export function usePlaySession(slug) {
     await loadNext(token);
   };
 
-  return { token, current, loading, error, start, answer, skip };
+  const answerPhoto = async (questionId, file) => {
+    await api.submitPhotoAnswer(token, questionId, file);
+    await loadNext(token);
+  };
+
+  return { token, current, loading, error, start, answer, skip, answerPhoto };
 }

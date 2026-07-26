@@ -17,7 +17,7 @@ const DEFAULT_NEEDED_POINTS = 60;
 export default function PlayPage() {
   const { slug } = useParams();
   const [screen, setScreen] = useState("name"); // name | cover | play | rewards
-  const { token, current, loading, error, start, answer, skip } = usePlaySession(slug);
+  const { token, current, loading, error, start, answer, skip, answerPhoto } = usePlaySession(slug);
   const [patches, setPatches] = useState([]);
   const [rewards, setRewards] = useState(null);
   const [selected, setSelected] = useState(null); // { kind: "option" | "custom", id }
@@ -56,6 +56,14 @@ export default function PlayPage() {
 
   const handleSkip = async () => {
     await skip(current.question_id);
+  };
+
+  const handlePhotoAnswer = async (file) => {
+    await answerPhoto(current.question_id, file);
+    setPatches((prev) => [
+      ...prev,
+      { tag: "foto", response: "📷", rotation: Math.random() * 8 - 4 },
+    ]);
   };
 
   const fetchRewards = async () => {
@@ -162,20 +170,28 @@ export default function PlayPage() {
             </div>
 
             {current.module_type === "question" && (
-              <QuestionCard question={current} onSubmit={handleAnswer} onSkip={handleSkip} />
+              <QuestionCard
+                question={current}
+                onSubmit={handleAnswer}
+                onSkip={handleSkip}
+                onSubmitPhoto={handlePhotoAnswer}
+              />
             )}
 
             {current.module_type === "done" && (
-              <div className="text-center screen-enter">
-                <p className="mb-4">¡Terminaste las preguntas!</p>
-                {current.rewards_unlocked && (
-                  <button
-                    onClick={loadRewards}
-                    className="btn-fill bg-gem px-6 py-3 rounded-xl font-semibold"
-                  >
-                    Elegir mi cita »
-                  </button>
-                )}
+              <div className="text-center screen-enter mb-4">
+                <p>¡Terminaste las preguntas!</p>
+              </div>
+            )}
+
+            {current.rewards_unlocked && (
+              <div className="text-center screen-enter mt-4">
+                <button
+                  onClick={loadRewards}
+                  className="btn-fill bg-gem px-6 py-3 rounded-xl font-semibold"
+                >
+                  Elegir mi cita »
+                </button>
                 {rewardsError && (
                   <p className="text-gem text-sm mt-3">{rewardsError}</p>
                 )}

@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.player import Player
@@ -9,9 +9,20 @@ from app.models.answer import Answer
 from app.models.reward_option import RewardOption
 from app.models.custom_reward import CustomReward
 from app.models.reward_selection import RewardSelection
+from app.models.uploaded_image import UploadedImage
 from app.schemas.play import AnswerSubmit, CustomRewardCreate, RewardSelectionCreate, SkipQuestion
-from app.services.scoring import award_points, has_unlocked_rewards
-from app.services.uploads import image_url
+from app.services.scoring import (
+    award_points,
+    has_unlocked_rewards,
+    any_reward_available,
+    reward_effective_threshold,
+)
+from app.services.uploads import (
+    ALLOWED_CONTENT_TYPES,
+    MAX_UPLOAD_SIZE_BYTES,
+    image_url,
+    save_image_file,
+)
 
 router = APIRouter(prefix="/api/play", tags=["play"])
 
@@ -34,6 +45,17 @@ def get_player_or_404(token: str, db: Session) -> Player:
     if not player:
         raise HTTPException(404, "Jugador no encontrado")
     return player
+
+
+def find_reward_module(player: Player):
+    return next((m for m in player.experience.modules if m.type == "reward_picker"), None)
+
+
+def compute_rewards_unlocked(player: Player, threshold: int) -> bool:
+    reward_module = find_reward_module(player)
+    if reward_module:
+        return any_reward_available(player.total_points, reward_module, threshold)
+    return has_unlocked_rewards(player.total_points, threshold)
 
 
 @router.post("/start/{experience_slug}")
@@ -88,16 +110,14 @@ def get_next_module(token: str, db: Session = Depends(get_db)):
                         "image_url": image_url(q.image),
                         "total_points": player.total_points,
                         "reward_threshold": threshold,
-                        "rewards_unlocked": has_unlocked_rewards(
-                            player.total_points, threshold
-                        ),
+                        "rewards_unlocked": compute_rewards_unlocked(player, threshold),
                     }
 
     return {
         "module_type": "done",
         "total_points": player.total_points,
         "reward_threshold": threshold,
-        "rewards_unlocked": has_unlocked_rewards(player.total_points, threshold),
+        "rewards_unlocked": compute_rewards_unlocked(player, threshold),
     }
 
 
@@ -143,7 +163,59 @@ def submit_answer(token: str, data: AnswerSubmit, db: Session = Depends(get_db))
         "points_awarded": points,
         "total_points": player.total_points,
         "reward_threshold": threshold,
-        "rewards_unlocked": has_unlocked_rewards(player.total_points, threshold),
+        "rewards_unlocked": compute_rewards_unlocked(player, threshold),
+    }
+
+
+@router.post("/{token}/answers/photo")
+async def submit_photo_answer(
+    token: str,
+    question_id: int = Form(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    player = get_player_or_404(token, db)
+    question = get_question_or_404(question_id, db)
+    ensure_answerable(question, player, db)
+
+    if file.content_type not in ALLOWED_CONTENT_TYPES:
+        raise HTTPException(400, "Formato de imagen no soportado")
+
+    content = await file.read()
+    if len(content) > MAX_UPLOAD_SIZE_BYTES:
+        raise HTTPException(
+            413, f"La imagen supera el límite de {MAX_UPLOAD_SIZE_BYTES // (1024 * 1024)}MB"
+        )
+
+    stored_filename = save_image_file(content, file.filename or "foto")
+    image = UploadedImage(
+        creator_id=player.experience.creator_id,
+        original_filename=file.filename or "foto",
+        stored_filename=stored_filename,
+        content_type=file.content_type,
+        size_bytes=len(content),
+    )
+    db.add(image)
+    db.flush()
+
+    points = award_points(question.points)
+    db.add(
+        Answer(
+            player_id=player.id,
+            question_id=question.id,
+            response_image_id=image.id,
+            points_awarded=points,
+        )
+    )
+    player.total_points += points
+    db.commit()
+
+    threshold = player.experience.reward_threshold
+    return {
+        "points_awarded": points,
+        "total_points": player.total_points,
+        "reward_threshold": threshold,
+        "rewards_unlocked": compute_rewards_unlocked(player, threshold),
     }
 
 
@@ -168,14 +240,12 @@ def skip_question(token: str, data: SkipQuestion, db: Session = Depends(get_db))
     return {
         "total_points": player.total_points,
         "reward_threshold": threshold,
-        "rewards_unlocked": has_unlocked_rewards(player.total_points, threshold),
+        "rewards_unlocked": compute_rewards_unlocked(player, threshold),
     }
 
 
 def get_reward_module(player: Player, db: Session):
-    reward_module = next(
-        (m for m in player.experience.modules if m.type == "reward_picker"), None
-    )
+    reward_module = find_reward_module(player)
     if not reward_module:
         raise HTTPException(404, "Sin recompensas configuradas")
     return reward_module
@@ -184,9 +254,10 @@ def get_reward_module(player: Player, db: Session):
 @router.get("/{token}/rewards")
 def get_rewards(token: str, db: Session = Depends(get_db)):
     player = get_player_or_404(token, db)
-    if not has_unlocked_rewards(player.total_points, player.experience.reward_threshold):
-        raise HTTPException(403, "Todavía no se desbloquearon las recompensas")
     reward_module = get_reward_module(player, db)
+    threshold = player.experience.reward_threshold
+    if not any_reward_available(player.total_points, reward_module, threshold):
+        raise HTTPException(403, "Todavía no se desbloquearon las recompensas")
 
     my_custom_rewards = (
         db.query(CustomReward)
@@ -205,7 +276,7 @@ def get_rewards(token: str, db: Session = Depends(get_db)):
                 "requires_datetime": r.requires_datetime,
             }
             for r in reward_module.reward_options
-            if r.unlock_points is None or player.total_points >= r.unlock_points
+            if player.total_points >= reward_effective_threshold(r, threshold)
         ],
         "custom": {
             "enabled": limit > 0,

@@ -255,6 +255,13 @@ export default function ModuleBuilder({ experience, onModuleAdded, editingModule
                 >
                   opción múltiple
                 </button>
+                <button
+                  onClick={() => updateQuestion(i, "input_type", "photo")}
+                  title="El jugador tiene que subir una foto para responder (ej: 'una foto de tu mascota')"
+                  className={`btn-ghost px-3 py-1.5 rounded-lg text-xs ${q.input_type === "photo" ? "bg-raven" : "bg-void border border-white/20"}`}
+                >
+                  📷 foto del jugador
+                </button>
               </div>
 
               {q.input_type === "multiple_choice" && (
@@ -352,7 +359,7 @@ export default function ModuleBuilder({ experience, onModuleAdded, editingModule
                   value={r.unlock_points}
                   onChange={(e) => updateReward(i, "unlock_points", e.target.value)}
                   placeholder="pts mín."
-                  title="Puntos mínimos para que esta recompensa aparezca (opcional, vacío = sin mínimo propio)"
+                  title="Puntos mínimos para que esta recompensa aparezca (opcional, vacío = usa el mínimo general de la experiencia)"
                   className="w-20 rounded-lg border border-white/20 bg-void p-2 text-sm"
                 />
               </div>

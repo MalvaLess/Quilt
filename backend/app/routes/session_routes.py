@@ -5,6 +5,7 @@ from app.models.creator import Creator
 from app.models.player import Player
 from app.models.experience import Experience
 from app.services.auth_service import get_current_creator
+from app.services.uploads import image_url
 
 router = APIRouter(prefix="/api", tags=["players"])
 
@@ -34,8 +35,11 @@ def list_players(
             "total_points": p.total_points,
             "answers": [
                 {
+                    "id": a.id,
                     "prompt": a.question.prompt,
                     "response": a.response_text,
+                    "response_image_id": a.response_image_id,
+                    "response_image_url": image_url(a.response_image),
                     "points_awarded": a.points_awarded,
                     "skipped": a.skipped,
                     "answered_at": a.answered_at,
@@ -68,8 +72,11 @@ def get_player_detail(
         "total_points": player.total_points,
         "answers": [
             {
+                "id": a.id,
                 "prompt": a.question.prompt,
                 "response": a.response_text,
+                "response_image_id": a.response_image_id,
+                "response_image_url": image_url(a.response_image),
                 "points_awarded": a.points_awarded,
                 "skipped": a.skipped,
                 "answered_at": a.answered_at,
