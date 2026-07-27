@@ -18,3 +18,6 @@ npm-debug.log*
 
 # Imágenes subidas por creadores (contenido de usuario, no versionar)
 backend/uploads/
+
+# Mockups de referencia de diseño (no forman parte del código del proyecto)
+Mokups/
