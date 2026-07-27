@@ -26,5 +26,51 @@ Pensado originalmente como una dinámica para planear citas de forma personaliza
 - Jest + React Testing Library — testing
 
 **Infraestructura**
-- Docker + Docker Compose — contenedores para backend, frontend y base de datos
+- Docker Compose — levanta la base de datos PostgreSQL
 - .env — configuración de conexión a la base de datos y secretos
+
+## Inicio rápido (self-hosting)
+
+Requisitos: [Docker](https://www.docker.com/), Python 3.12+, Node 18+.
+
+1. **Cloná el repo y levantá la base de datos:**
+
+   ```bash
+   git clone https://github.com/MalvaLess/Quilt.git
+   cd Quilt
+   docker compose up -d
+   ```
+
+   Esto levanta un contenedor de PostgreSQL en `localhost:5432` (user/password/db: `quilt`).
+
+2. **Backend:**
+
+   ```bash
+   cd backend
+   cp .env.example .env
+   ```
+
+   Abrí `.env` y poné un `SECRET_KEY` real (ej. `openssl rand -hex 32`). El `DATABASE_URL` por defecto ya apunta a la base de datos del paso 1.
+
+   ```bash
+   python -m venv interactive
+   interactive\Scripts\activate      # Windows
+   source interactive/bin/activate   # macOS/Linux
+
+   pip install -r requirements.txt
+   alembic upgrade head
+   uvicorn app:app --reload --port 8000
+   ```
+
+   Opcional: seteá `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` en `.env` y corré `python seed.py` para crear una primera cuenta sin pasar por el registro de la UI.
+
+3. **Frontend** (en otra terminal):
+
+   ```bash
+   cd frontend
+   cp .env.example .env
+   npm install
+   npm run dev
+   ```
+
+   Abrí la URL que imprime (normalmente `http://localhost:5173`), registrate y empezá a armar tu experiencia.

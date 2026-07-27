@@ -29,5 +29,51 @@ Originally conceived as a dynamic tool for planning personalized dates, the proj
 
 **Infrastructure**
 
-* Docker + Docker Compose — containers for backend, frontend, and database
+* Docker Compose — spins up the PostgreSQL database
 * .env — database connection and secrets configuration
+
+## Quick Start (self-hosting)
+
+Prerequisites: [Docker](https://www.docker.com/), Python 3.12+, Node 18+.
+
+1. **Clone the repo and start the database:**
+
+   ```bash
+   git clone https://github.com/MalvaLess/Quilt.git
+   cd Quilt
+   docker compose up -d
+   ```
+
+   This starts a PostgreSQL container on `localhost:5432` (user/password/db: `quilt`).
+
+2. **Backend:**
+
+   ```bash
+   cd backend
+   cp .env.example .env
+   ```
+
+   Open `.env` and set a real `SECRET_KEY` (e.g. `openssl rand -hex 32`). The default `DATABASE_URL` already points at the database from step 1.
+
+   ```bash
+   python -m venv interactive
+   interactive\Scripts\activate      # Windows
+   source interactive/bin/activate   # macOS/Linux
+
+   pip install -r requirements.txt
+   alembic upgrade head
+   uvicorn app:app --reload --port 8000
+   ```
+
+   Optional: set `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` in `.env` and run `python seed.py` to create a first account instead of registering through the UI.
+
+3. **Frontend** (in a new terminal):
+
+   ```bash
+   cd frontend
+   cp .env.example .env
+   npm install
+   npm run dev
+   ```
+
+   Open the printed URL (usually `http://localhost:5173`), register an account, and start building.
