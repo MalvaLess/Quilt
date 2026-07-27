@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
+from app.models.answer import Answer
 from app.models.creator import Creator
 from app.models.player import Player
 from app.models.experience import Experience
+from app.models.uploaded_image import UploadedImage
 from app.services.auth_service import get_current_creator
-from app.services.uploads import image_url
+from app.services.uploads import delete_image_file, image_url
 
 router = APIRouter(prefix="/api", tags=["players"])
 
@@ -14,6 +16,26 @@ def reward_label(selection) -> str:
     if selection.reward_option_id is not None:
         return selection.reward_option.label
     return selection.custom_reward.label
+
+
+def get_owned_player(player_id: int, current_creator: Creator, db: Session) -> Player:
+    player = db.query(Player).get(player_id)
+    if not player:
+        raise HTTPException(404, "Jugador no encontrado")
+    if player.experience.creator_id != current_creator.id:
+        raise HTTPException(403, "No tenés permiso sobre este jugador")
+    return player
+
+
+def _delete_answer(db: Session, player: Player, answer: Answer) -> None:
+    if answer.response_image_id:
+        image = db.query(UploadedImage).get(answer.response_image_id)
+        if image:
+            if image.stored_filename:
+                delete_image_file(image.stored_filename)
+            db.delete(image)
+    player.total_points = max(0, player.total_points - (answer.points_awarded or 0))
+    db.delete(answer)
 
 
 @router.get("/experiences/{experience_id}/players")
@@ -45,6 +67,7 @@ def list_players(
                     "answered_at": a.answered_at,
                 }
                 for a in p.answers
+                if not a.skipped
             ],
             "reward_chosen": reward_label(p.reward_selections[-1])
             if p.reward_selections
@@ -60,11 +83,7 @@ def get_player_detail(
     db: Session = Depends(get_db),
     current_creator: Creator = Depends(get_current_creator),
 ):
-    player = db.query(Player).get(player_id)
-    if not player:
-        raise HTTPException(404, "Jugador no encontrado")
-    if player.experience.creator_id != current_creator.id:
-        raise HTTPException(403, "No tenés permiso sobre este jugador")
+    player = get_owned_player(player_id, current_creator, db)
 
     return {
         "id": player.id,
@@ -82,6 +101,7 @@ def get_player_detail(
                 "answered_at": a.answered_at,
             }
             for a in player.answers
+            if not a.skipped
         ],
         "reward_selections": [
             {
@@ -92,3 +112,36 @@ def get_player_detail(
             for rs in player.reward_selections
         ],
     }
+
+
+@router.delete("/players/{player_id}/answers/{answer_id}")
+def delete_answer(
+    player_id: int,
+    answer_id: int,
+    db: Session = Depends(get_db),
+    current_creator: Creator = Depends(get_current_creator),
+):
+    player = get_owned_player(player_id, current_creator, db)
+    answer = db.query(Answer).get(answer_id)
+    if not answer or answer.player_id != player.id:
+        raise HTTPException(404, "Respuesta no encontrada")
+
+    _delete_answer(db, player, answer)
+    db.commit()
+    return {"deleted": True, "total_points": player.total_points}
+
+
+@router.delete("/players/{player_id}/answers")
+def delete_all_answers(
+    player_id: int,
+    db: Session = Depends(get_db),
+    current_creator: Creator = Depends(get_current_creator),
+):
+    player = get_owned_player(player_id, current_creator, db)
+    for answer in list(player.answers):
+        if answer.skipped:
+            continue
+        _delete_answer(db, player, answer)
+
+    db.commit()
+    return {"deleted": True, "total_points": player.total_points}

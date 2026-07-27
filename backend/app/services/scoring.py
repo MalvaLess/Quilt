@@ -16,10 +16,21 @@ def reward_effective_threshold(reward_option, global_threshold: int) -> int:
     )
 
 
+def custom_reward_effective_threshold(reward_module, global_threshold: int) -> int:
+    # unlock_points propio del picker de recompensa construible pisa el threshold global
+    return (
+        reward_module.custom_reward_unlock_points
+        if reward_module.custom_reward_unlock_points is not None
+        else global_threshold
+    )
+
+
 def any_reward_available(total_points: int, reward_module, global_threshold: int) -> bool:
     for r in reward_module.reward_options:
         if total_points >= reward_effective_threshold(r, global_threshold):
             return True
-    if reward_module.custom_reward_limit and total_points >= global_threshold:
+    if reward_module.custom_reward_limit and total_points >= custom_reward_effective_threshold(
+        reward_module, global_threshold
+    ):
         return True
     return False

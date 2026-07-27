@@ -16,6 +16,7 @@ class ExperienceUpdate(BaseModel):
     description: str | None = None
     status: str | None = None
     reward_threshold: int | None = None
+    spend_points_on_claim: bool | None = None
 
 
 class ExperienceOut(BaseModel):
@@ -26,6 +27,7 @@ class ExperienceOut(BaseModel):
     description: str | None
     status: str
     reward_threshold: int
+    spend_points_on_claim: bool
 
     class Config:
         from_attributes = True

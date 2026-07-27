@@ -1,21 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api, resolveImageUrl } from "../../api/client";
+import { api, clearApiCache, resolveImageUrl } from "../../api/client";
 import ColorPickerButton from "../../components/ColorPickerButton";
+import EmojiPickerButton from "../../components/EmojiPickerButton";
 import Logo from "../../components/Logo";
 import SiteBackground from "../../components/SiteBackground";
+import { useLanguage } from "../../i18n/LanguageContext";
+import AccountView from "./AccountView";
 
-const TABS = [
-  { key: "general", label: "General" },
-  { key: "modulos", label: "Módulos" },
-  { key: "recompensas", label: "Recompensas" },
-  { key: "compartir", label: "Compartir" },
-  { key: "respuestas", label: "Respuestas" },
-];
+const TABS = ["general", "modulos", "recompensas", "compartir", "respuestas"];
+const TAB_LABEL_KEY = {
+  general: "tabGeneral",
+  modulos: "tabModules",
+  recompensas: "tabRewards",
+  compartir: "tabShare",
+  respuestas: "tabAnswers",
+};
 
 const STATUS_STYLES = {
-  published: { label: "Activa", bg: "rgba(255,45,79,0.18)", color: "#ffb3c0" },
-  draft: { label: "Borrador", bg: "rgba(255,255,255,0.08)", color: "rgba(233,233,237,0.65)" },
+  published: { bg: "rgba(255,45,79,0.18)", color: "#ffb3c0" },
+  draft: { bg: "rgba(255,255,255,0.08)", color: "rgba(233,233,237,0.65)" },
 };
 
 const AVATAR_PALETTE = [
@@ -28,7 +32,7 @@ const fieldLabel = { fontSize: 12, color: "rgba(233,233,237,0.6)", display: "blo
 const fieldInput = { width: "100%", height: 42, padding: "0 12px", borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.14)", color: "#e9e9ed", fontSize: 14, fontFamily: "Inter,system-ui,sans-serif" };
 const rowInput = { flex: 1, background: "transparent", border: "none", color: "#e9e9ed", fontSize: 14, fontFamily: "Inter,system-ui,sans-serif", outline: "none" };
 const pointsInput = { width: 64, height: 32, textAlign: "center", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 6, color: "#e9e9ed", fontSize: 12 };
-const rowShell = { display: "flex", alignItems: "center", gap: 12, padding: 14, borderRadius: 10, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)" };
+const rowShell = { display: "flex", alignItems: "center", gap: 12, padding: 14, borderRadius: 10, background: "rgba(255,255,255,0.22)", backdropFilter: "blur(28px) saturate(160%)", WebkitBackdropFilter: "blur(28px) saturate(160%)", border: "1px solid rgba(255,255,255,0.34)", boxShadow: "0 8px 32px rgba(0,0,0,0.35)" };
 const addPill = { fontSize: 12, padding: "8px 14px", borderRadius: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.16)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 };
 const typeIcon = { color: "#ff2d4f", fontSize: 15, width: 18, textAlign: "center" };
 
@@ -47,14 +51,15 @@ function QUESTION_TYPE_ICON(type) {
   return "fa-solid fa-align-left";
 }
 
-function defaultPromptFor(type) {
-  if (type === "multiple_choice") return "Nueva pregunta de opción múltiple";
-  if (type === "photo") return "Nueva pregunta de foto";
-  return "Nueva pregunta de texto libre";
+function defaultPromptFor(type, t) {
+  if (type === "multiple_choice") return t("dashboardPage.defaultPromptMultiple");
+  if (type === "photo") return t("dashboardPage.defaultPromptPhoto");
+  return t("dashboardPage.defaultPromptText");
 }
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const { language, setLanguage, t } = useLanguage();
   const [creator, setCreator] = useState(null);
   const [experiences, setExperiences] = useState([]);
   const [stats, setStats] = useState({});
@@ -63,11 +68,21 @@ export default function DashboardPage() {
   const [fullExperience, setFullExperience] = useState(null);
   const [editorTab, setEditorTab] = useState("general");
   const [linkRevealed, setLinkRevealed] = useState(false);
-  const [copyLabel, setCopyLabel] = useState("Copiar");
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
   const [players, setPlayers] = useState(null);
   const [expandedPlayer, setExpandedPlayer] = useState(null);
   const [loadError, setLoadError] = useState(null);
   const [moduleError, setModuleError] = useState(null);
+  const [langOpen, setLangOpen] = useState(false);
+  const [reactivatedNotice, setReactivatedNotice] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem("quilt_reactivated")) {
+      localStorage.removeItem("quilt_reactivated");
+      setReactivatedNotice(true);
+    }
+  }, []);
 
   const fullExpRef = useRef(null);
   const saveTimers = useRef({});
@@ -85,6 +100,7 @@ export default function DashboardPage() {
       .catch((e) => {
         if (e.status === 401) {
           localStorage.removeItem("quilt_token");
+          clearApiCache();
           navigate("/login", { replace: true });
           return;
         }
@@ -155,7 +171,7 @@ export default function DashboardPage() {
   };
 
   const handleDeleteFromList = async (exp) => {
-    if (!confirm(`¿Borrar "${exp.title}"? Esto elimina también sus módulos y jugadores.`)) return;
+    if (!confirm(t("dashboardPage.confirmDeleteExperience").replace("{title}", exp.title))) return;
     try {
       await api.deleteExperience(exp.id);
       setExperiences((prev) => prev.filter((e) => e.id !== exp.id));
@@ -171,6 +187,7 @@ export default function DashboardPage() {
 
   const handleLogout = () => {
     localStorage.removeItem("quilt_token");
+    clearApiCache();
     navigate("/login", { replace: true });
   };
 
@@ -211,11 +228,13 @@ export default function DashboardPage() {
             }
           : {
               reward_options: mod.reward_options.map((r) => ({
+                id: r.id,
                 label: r.label,
                 description: r.description,
                 icon: r.icon,
                 unlock_points: r.unlock_points,
                 requires_datetime: r.requires_datetime,
+                one_per_player: r.one_per_player,
               })),
             };
       api.updateModule(moduleId, payload).catch((e) => setModuleError(e.message));
@@ -271,7 +290,7 @@ export default function DashboardPage() {
   const addQuestion = async (type) => {
     setModuleError(null);
     const question = {
-      prompt: defaultPromptFor(type),
+      prompt: defaultPromptFor(type, t),
       points: 10,
       repeatable: false,
       input_type: type,
@@ -370,11 +389,13 @@ export default function DashboardPage() {
       api
         .updateModule(moduleId, {
           reward_options: rewardOptions.map((r) => ({
+            id: r.id,
             label: r.label,
             description: r.description,
             icon: r.icon,
             unlock_points: r.unlock_points,
             requires_datetime: r.requires_datetime,
+            one_per_player: r.one_per_player,
           })),
         })
         .catch((e) => setModuleError(e.message));
@@ -385,17 +406,19 @@ export default function DashboardPage() {
 
   const addReward = async () => {
     setModuleError(null);
-    const reward = { label: "Nueva recompensa", description: "", icon: "🎁", unlock_points: 10, requires_datetime: false };
+    const reward = { label: t("dashboardPage.defaultRewardLabel"), description: "", icon: "🎁", unlock_points: 10, requires_datetime: false, one_per_player: false };
     try {
       if (rewardModule) {
         const rewardOptions = [...rewardModule.reward_options, reward];
         await api.updateModule(rewardModule.id, {
           reward_options: rewardOptions.map((r) => ({
+            id: r.id,
             label: r.label,
             description: r.description,
             icon: r.icon,
             unlock_points: r.unlock_points,
             requires_datetime: r.requires_datetime,
+            one_per_player: r.one_per_player,
           })),
         });
       } else {
@@ -424,11 +447,13 @@ export default function DashboardPage() {
     try {
       await api.updateModule(moduleId, {
         reward_options: remaining.map((r) => ({
+          id: r.id,
           label: r.label,
           description: r.description,
           icon: r.icon,
           unlock_points: r.unlock_points,
           requires_datetime: r.requires_datetime,
+          one_per_player: r.one_per_player,
         })),
       });
     } catch (e) {
@@ -447,8 +472,21 @@ export default function DashboardPage() {
     api.updateModule(rewardModule.id, { custom_reward_limit: newLimit }).catch((e) => setModuleError(e.message));
   };
 
+  const updateCustomRewardConfig = (field, value) => {
+    if (!rewardModule) return;
+    const moduleId = rewardModule.id;
+    setFullExperience((prev) => ({
+      ...prev,
+      modules: prev.modules.map((m) => (m.id !== moduleId ? m : { ...m, [field]: value })),
+    }));
+    clearTimeout(saveTimers.current[`mod-cfg-${moduleId}`]);
+    saveTimers.current[`mod-cfg-${moduleId}`] = setTimeout(() => {
+      api.updateModule(moduleId, { [field]: value }).catch((e) => setModuleError(e.message));
+    }, 500);
+  };
+
   const handleDeletePhoto = async (playerId, answerId, imageId) => {
-    if (!confirm("¿Borrar esta foto? No se puede deshacer.")) return;
+    if (!confirm(t("dashboardPage.confirmDeletePhoto"))) return;
     try {
       await api.deleteImage(imageId);
       setPlayers((prev) =>
@@ -463,12 +501,49 @@ export default function DashboardPage() {
     }
   };
 
+  const handleDeleteAnswer = async (playerId, answerId) => {
+    if (!confirm(t("dashboardPage.confirmDeleteAnswer"))) return;
+    try {
+      const res = await api.deleteAnswer(playerId, answerId);
+      setPlayers((prev) =>
+        prev.map((p) =>
+          p.id !== playerId
+            ? p
+            : { ...p, total_points: res.total_points, answers: p.answers.filter((a) => a.id !== answerId) },
+        ),
+      );
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  const handleDeleteAllAnswers = async (playerId) => {
+    if (!confirm(t("dashboardPage.confirmDeleteAllAnswers"))) return;
+    try {
+      const res = await api.deleteAllAnswers(playerId);
+      setPlayers((prev) =>
+        prev.map((p) => (p.id !== playerId ? p : { ...p, total_points: res.total_points, answers: [] })),
+      );
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
   const link = selectedExp ? `${window.location.origin}/play/${selectedExp.slug}` : "";
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(link);
-      setCopyLabel("¡Copiado!");
-      setTimeout(() => setCopyLabel("Copiar"), 1500);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 1500);
+    } catch {
+      // clipboard no disponible
+    }
+  };
+  const copyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(selectedExp?.slug || "");
+      setCodeCopied(true);
+      setTimeout(() => setCodeCopied(false), 1500);
     } catch {
       // clipboard no disponible
     }
@@ -478,42 +553,95 @@ export default function DashboardPage() {
     <div style={{ minHeight: "100vh", background: "#050505", color: "#e9e9ed", fontFamily: "Inter,system-ui,sans-serif", position: "relative" }}>
       <SiteBackground />
       {/* TOPBAR */}
-      <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 12, padding: "14px 28px", borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(23,18,20,0.55)", backdropFilter: "blur(12px)" }}>
+      <div style={{ position: "relative", zIndex: 30, display: "flex", alignItems: "center", gap: 20, padding: "14px 28px", borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(23,18,20,0.55)", backdropFilter: "blur(12px)" }}>
         <Logo style={{ marginRight: "auto" }} />
-        <div style={{ fontSize: 13, color: "rgba(233,233,237,0.7)" }}>{creator?.display_name || creator?.email}</div>
+        <div
+          onClick={() => setView("account")}
+          style={{ fontSize: 13, color: "rgba(233,233,237,0.7)", cursor: "pointer", textDecoration: "underline", textDecorationColor: "rgba(233,233,237,0.25)" }}
+        >
+          {creator?.display_name || creator?.email}
+        </div>
+        <div style={{ position: "relative" }}>
+          <div
+            onClick={() => setLangOpen(!langOpen)}
+            style={{ height: 30, padding: "0 10px", borderRadius: 8, border: "1px solid rgba(233,233,237,0.16)", display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 12 }}
+          >
+            <span>{language.toUpperCase()}</span>
+            <i className="fa-solid fa-chevron-down" style={{ fontSize: 8, color: "rgba(233,233,237,0.55)" }} />
+          </div>
+          {langOpen && (
+            <div style={{ position: "absolute", top: 38, right: 0, background: "#171217", border: "1px solid rgba(233,233,237,0.12)", borderRadius: 10, padding: 6, display: "flex", flexDirection: "column", gap: 2, minWidth: 88, boxShadow: "0 12px 32px rgba(0,0,0,0.5)", zIndex: 20 }}>
+              <div
+                onClick={() => {
+                  setLanguage("es");
+                  setLangOpen(false);
+                }}
+                style={{ padding: "7px 10px", borderRadius: 6, fontSize: 13, cursor: "pointer", background: language === "es" ? "rgba(255,45,79,0.16)" : "transparent", color: language === "es" ? "#ffb3c0" : "#e9e9ed" }}
+              >
+                ES · Español
+              </div>
+              <div
+                onClick={() => {
+                  setLanguage("en");
+                  setLangOpen(false);
+                }}
+                style={{ padding: "7px 10px", borderRadius: 6, fontSize: 13, cursor: "pointer", background: language === "en" ? "rgba(255,45,79,0.16)" : "transparent", color: language === "en" ? "#ffb3c0" : "#e9e9ed" }}
+              >
+                EN · English
+              </div>
+            </div>
+          )}
+        </div>
         <div onClick={handleLogout} style={{ fontSize: 13, color: "rgba(233,233,237,0.55)", cursor: "pointer" }}>
-          Cerrar sesión
+          {t("dashboardPage.logout")}
         </div>
       </div>
 
       <div style={{ position: "relative", zIndex: 1, maxWidth: 960, margin: "0 auto", padding: "36px 24px" }}>
-        {loadError && <p style={{ color: "#ff2d4f", fontSize: 13, marginBottom: 16 }}>No se pudieron cargar tus experiencias: {loadError}</p>}
+        {loadError && <p style={{ color: "#ff2d4f", fontSize: 13, marginBottom: 16 }}>{t("dashboardPage.loadErrorPrefix")} {loadError}</p>}
+        {reactivatedNotice && (
+          <div style={{ background: "rgba(255,45,79,0.1)", border: "1px solid rgba(255,45,79,0.35)", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#ffb3c0", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <span>{t("account.reactivatedMessage")}</span>
+            <i onClick={() => setReactivatedNotice(false)} className="fa-solid fa-xmark" style={{ cursor: "pointer" }} />
+          </div>
+        )}
+
+        {/* ACCOUNT VIEW */}
+        {view === "account" && (
+          <AccountView
+            creator={creator}
+            onBack={() => setView("list")}
+            onNameSaved={(name) => setCreator((prev) => (prev ? { ...prev, display_name: name } : prev))}
+            onLoggedOut={handleLogout}
+          />
+        )}
 
         {/* LIST VIEW */}
         {view === "list" && (
           <>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-              <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 24 }}>Tus experiencias</div>
+              <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 24 }}>{t("dashboardPage.yourExperiences")}</div>
               <div
                 onClick={createExperience}
                 style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 13, color: "#ffb3c0", background: "rgba(255,45,79,0.16)", border: "1.5px solid #ff2d4f", borderRadius: 9, padding: "10px 18px", cursor: "pointer" }}
               >
-                + Nueva experiencia
+                {t("dashboardPage.newExperience")}
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: 16 }}>
               {experiences.map((exp) => {
                 const st = STATUS_STYLES[exp.status] ?? STATUS_STYLES.draft;
+                const statusLabel = exp.status === "published" ? t("dashboardPage.active") : t("dashboardPage.inactive");
                 const s = stats[exp.id];
                 return (
-                  <div key={exp.id} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 14, padding: 20, display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div key={exp.id} style={{ background: "rgba(255,255,255,0.22)", backdropFilter: "blur(28px) saturate(160%)", WebkitBackdropFilter: "blur(28px) saturate(160%)", border: "1px solid rgba(255,255,255,0.34)", boxShadow: "0 8px 32px rgba(0,0,0,0.35)", borderRadius: 14, padding: 20, display: "flex", flexDirection: "column", gap: 10 }}>
                     <div onClick={() => selectExperience(exp)} style={{ cursor: "pointer" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                         <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 16 }}>{exp.title}</div>
-                        <div style={{ fontSize: 11, padding: "3px 10px", borderRadius: 6, background: st.bg, color: st.color }}>{st.label}</div>
+                        <div style={{ fontSize: 11, padding: "3px 10px", borderRadius: 6, background: st.bg, color: st.color }}>{statusLabel}</div>
                       </div>
                       <div style={{ fontSize: 12, color: "rgba(233,233,237,0.55)", marginTop: 10 }}>
-                        {s ? `${s.plays} jugadas · ${s.moduleCount} módulos` : "cargando…"}
+                        {s ? `${s.plays} ${t("dashboardPage.plays")} · ${s.moduleCount} ${t("dashboardPage.modulesWord")}` : t("dashboardPage.loadingStats")}
                       </div>
                     </div>
                     <div style={{ display: "flex", justifyContent: "flex-end" }}>
@@ -535,19 +663,19 @@ export default function DashboardPage() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
               <div onClick={() => setView("list")} style={{ fontSize: 13, color: "rgba(233,233,237,0.6)", cursor: "pointer" }}>
-                <i className="fa-solid fa-arrow-left" /> Experiencias
+                <i className="fa-solid fa-arrow-left" /> {t("dashboardPage.backToList")}
               </div>
             </div>
             <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 24, marginBottom: 18 }}>{selectedExp.title}</div>
 
             <div style={{ display: "flex", gap: 4, borderBottom: "1px solid rgba(255,255,255,0.08)", marginBottom: 24 }}>
-              {TABS.map((t) => (
+              {TABS.map((tabKey) => (
                 <div
-                  key={t.key}
-                  onClick={() => openTab(t.key)}
-                  style={{ padding: "10px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", color: editorTab === t.key ? "#ffb3c0" : "rgba(233,233,237,0.55)", borderBottom: `2px solid ${editorTab === t.key ? "#ff2d4f" : "transparent"}` }}
+                  key={tabKey}
+                  onClick={() => openTab(tabKey)}
+                  style={{ padding: "10px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", color: editorTab === tabKey ? "#ffb3c0" : "rgba(233,233,237,0.55)", borderBottom: `2px solid ${editorTab === tabKey ? "#ff2d4f" : "transparent"}` }}
                 >
-                  {t.label}
+                  {t(`dashboardPage.${TAB_LABEL_KEY[tabKey]}`)}
                 </div>
               ))}
             </div>
@@ -555,7 +683,7 @@ export default function DashboardPage() {
             {fullExperience && editorTab === "general" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 440 }}>
                 <div>
-                  <label style={fieldLabel}>Nombre</label>
+                  <label style={fieldLabel}>{t("dashboardPage.fieldName")}</label>
                   <input
                     type="text"
                     value={fullExperience.title}
@@ -565,23 +693,23 @@ export default function DashboardPage() {
                 </div>
 
                 <div style={{ position: "relative" }}>
-                  <label style={fieldLabel}>Color de la experiencia</label>
+                  <label style={fieldLabel}>{t("dashboardPage.fieldColor")}</label>
                   <ColorPickerButton value={fullExperience.theme_color || "#ff2d4f"} onChange={(c) => patchExperienceField("theme_color", c, true)} />
                 </div>
 
                 <div>
-                  <label style={fieldLabel}>Descripción</label>
+                  <label style={fieldLabel}>{t("dashboardPage.fieldDescription")}</label>
                   <textarea
                     value={fullExperience.description || ""}
                     onChange={(e) => patchExperienceField("description", e.target.value)}
-                    placeholder="¿De qué trata esta experiencia?"
+                    placeholder={t("dashboardPage.descriptionPlaceholder")}
                     style={{ width: "100%", height: 70, resize: "none", padding: "10px 12px", borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.14)", color: "#e9e9ed", fontSize: 14, fontFamily: "Inter,system-ui,sans-serif" }}
                   />
                 </div>
 
                 <div>
-                  <label style={fieldLabel}>Código de la experiencia</label>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 10, padding: "10px 12px" }}>
+                  <label style={fieldLabel}>{t("dashboardPage.fieldCode")}</label>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.22)", backdropFilter: "blur(28px) saturate(160%)", WebkitBackdropFilter: "blur(28px) saturate(160%)", border: "1px solid rgba(255,255,255,0.34)", boxShadow: "0 8px 32px rgba(0,0,0,0.35)", borderRadius: 10, padding: "10px 12px" }}>
                     <div style={{ flex: 1, fontSize: 13, fontFamily: "monospace", letterSpacing: "0.02em" }}>
                       {linkRevealed ? selectedExp.slug : "••••••••••••"}
                     </div>
@@ -594,7 +722,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div>
-                  <label style={fieldLabel}>Puntos por defecto para desbloquear recompensas</label>
+                  <label style={fieldLabel}>{t("dashboardPage.fieldRewardThreshold")}</label>
                   <input
                     type="number"
                     value={fullExperience.reward_threshold}
@@ -602,17 +730,30 @@ export default function DashboardPage() {
                     style={{ width: 120, height: 42, padding: "0 12px", borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.14)", color: "#e9e9ed", fontSize: 14, fontFamily: "Inter,system-ui,sans-serif" }}
                   />
                   <div style={{ fontSize: 11, color: "rgba(233,233,237,0.5)", marginTop: 6 }}>
-                    Se usa cuando una recompensa no tiene un puntaje propio asignado.
+                    {t("dashboardPage.rewardThresholdHint")}
+                  </div>
+                </div>
+
+                <div
+                  onClick={() => patchExperienceField("spend_points_on_claim", !fullExperience.spend_points_on_claim, true)}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: 14, borderRadius: 10, background: "rgba(255,255,255,0.22)", backdropFilter: "blur(28px) saturate(160%)", WebkitBackdropFilter: "blur(28px) saturate(160%)", border: "1px solid rgba(255,255,255,0.34)", boxShadow: "0 8px 32px rgba(0,0,0,0.35)", cursor: "pointer" }}
+                >
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>{t("dashboardPage.spendPointsTitle")}</div>
+                    <div style={{ fontSize: 12, color: "rgba(233,233,237,0.55)", marginTop: 2 }}>{t("dashboardPage.spendPointsSub")}</div>
+                  </div>
+                  <div style={{ width: 38, height: 22, borderRadius: 11, background: fullExperience.spend_points_on_claim ? "#ff2d4f" : "rgba(255,255,255,0.15)", position: "relative", flex: "none" }}>
+                    <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: fullExperience.spend_points_on_claim ? 19 : 3, transition: "left 0.2s ease" }} />
                   </div>
                 </div>
 
                 <div
                   onClick={() => patchExperienceField("status", fullExperience.status === "published" ? "draft" : "published", true)}
-                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: 14, borderRadius: 10, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)", cursor: "pointer" }}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: 14, borderRadius: 10, background: "rgba(255,255,255,0.22)", backdropFilter: "blur(28px) saturate(160%)", WebkitBackdropFilter: "blur(28px) saturate(160%)", border: "1px solid rgba(255,255,255,0.34)", boxShadow: "0 8px 32px rgba(0,0,0,0.35)", cursor: "pointer" }}
                 >
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>Experiencia activa</div>
-                    <div style={{ fontSize: 12, color: "rgba(233,233,237,0.55)", marginTop: 2 }}>Publicala para que se pueda jugar.</div>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>{t("dashboardPage.activeToggleTitle")}</div>
+                    <div style={{ fontSize: 12, color: "rgba(233,233,237,0.55)", marginTop: 2 }}>{t("dashboardPage.activeToggleSub")}</div>
                   </div>
                   <div style={{ width: 38, height: 22, borderRadius: 11, background: fullExperience.status === "published" ? "#ff2d4f" : "rgba(255,255,255,0.15)", position: "relative", flex: "none" }}>
                     <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: fullExperience.status === "published" ? 19 : 3, transition: "left 0.2s ease" }} />
@@ -645,7 +786,7 @@ export default function DashboardPage() {
                             onChange={(e) => updateQuestionField(m.id, qIndex, "points", parseInt(e.target.value) || 0)}
                             style={pointsInput}
                           />
-                          <div style={{ fontSize: 11, color: "rgba(233,233,237,0.5)" }}>pts</div>
+                          <div style={{ fontSize: 11, color: "rgba(233,233,237,0.5)" }}>{t("dashboardPage.pointsLabel")}</div>
                           <i
                             onClick={() => deleteQuestionRow(m.id, qIndex)}
                             className="fa-solid fa-trash"
@@ -660,19 +801,19 @@ export default function DashboardPage() {
                               checked={q.repeatable}
                               onChange={(e) => updateQuestionField(m.id, qIndex, "repeatable", e.target.checked)}
                             />
-                            repetible
+                            {t("dashboardPage.repeatableLabel")}
                           </label>
                           {q.image_url ? (
                             <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                               <img src={resolveImageUrl(q.image_url)} alt="" style={{ width: 22, height: 22, objectFit: "cover", borderRadius: 4, border: "1px solid rgba(255,255,255,0.2)" }} />
                               <span onClick={() => handleImageRemove(m.id, qIndex)} style={{ color: "#ff2d4f", cursor: "pointer", textDecoration: "underline" }}>
-                                quitar imagen
+                                {t("dashboardPage.removeImage")}
                               </span>
                             </span>
                           ) : (
                             <label style={{ cursor: "pointer" }}>
                               <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => handleImageSelect(m.id, qIndex, e.target.files?.[0])} />
-                              <span style={{ color: "#ffb3c0", textDecoration: "underline" }}>+ imagen</span>
+                              <span style={{ color: "#ffb3c0", textDecoration: "underline" }}>{t("dashboardPage.addImage")}</span>
                             </label>
                           )}
                         </div>
@@ -684,18 +825,18 @@ export default function DashboardPage() {
                                 <input
                                   value={opt}
                                   onChange={(e) => updateOption(m.id, qIndex, oIndex, e.target.value)}
-                                  placeholder={`Opción ${oIndex + 1}`}
+                                  placeholder={t("dashboardPage.optionPlaceholder").replace("{n}", oIndex + 1)}
                                   style={{ flex: 1, height: 30, padding: "0 10px", borderRadius: 6, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", color: "#e9e9ed", fontSize: 12 }}
                                 />
                                 {q.options.length > 2 && (
                                   <span onClick={() => removeOption(m.id, qIndex, oIndex)} style={{ fontSize: 11, color: "#ff2d4f", cursor: "pointer" }}>
-                                    quitar
+                                    {t("dashboardPage.removeOption")}
                                   </span>
                                 )}
                               </div>
                             ))}
                             <span onClick={() => addOption(m.id, qIndex)} style={{ fontSize: 11, color: "#ffb3c0", textDecoration: "underline", cursor: "pointer" }}>
-                              + agregar opción
+                              {t("dashboardPage.addOption")}
                             </span>
                           </div>
                         )}
@@ -704,13 +845,13 @@ export default function DashboardPage() {
                 </div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <div onClick={() => addQuestion("multiple_choice")} style={addPill}>
-                    <i className="fa-solid fa-list-check" /> Opción múltiple
+                    <i className="fa-solid fa-list-check" /> {t("dashboardPage.addQuestionMultiple")}
                   </div>
                   <div onClick={() => addQuestion("text")} style={addPill}>
-                    <i className="fa-solid fa-align-left" /> Texto libre
+                    <i className="fa-solid fa-align-left" /> {t("dashboardPage.addQuestionText")}
                   </div>
                   <div onClick={() => addQuestion("photo")} style={addPill}>
-                    <i className="fa-solid fa-camera" /> Foto
+                    <i className="fa-solid fa-camera" /> {t("dashboardPage.addQuestionPhoto")}
                   </div>
                 </div>
               </>
@@ -721,74 +862,138 @@ export default function DashboardPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
                   {moduleError && <p style={{ color: "#ff2d4f", fontSize: 13 }}>{moduleError}</p>}
                   {(rewardModule?.reward_options ?? []).map((r, rIndex) => (
-                    <div key={rIndex} style={rowShell}>
-                      <GripIcon />
-                      <input
-                        value={r.icon || ""}
-                        onChange={(e) => updateRewardField(rewardModule.id, rIndex, "icon", e.target.value)}
-                        style={{ ...rowInput, flex: "none", width: 28, fontSize: 20, textAlign: "center" }}
-                      />
-                      <input
-                        value={r.label}
-                        onChange={(e) => updateRewardField(rewardModule.id, rIndex, "label", e.target.value)}
-                        style={rowInput}
-                      />
-                      <div style={{ fontSize: 11, color: "rgba(233,233,237,0.5)" }}>desde</div>
-                      <input
-                        type="number"
-                        value={r.unlock_points ?? ""}
-                        onChange={(e) => updateRewardField(rewardModule.id, rIndex, "unlock_points", e.target.value === "" ? null : parseInt(e.target.value))}
-                        style={pointsInput}
-                      />
-                      <div style={{ fontSize: 11, color: "rgba(233,233,237,0.5)" }}>pts</div>
-                      <div
-                        onClick={() => updateRewardField(rewardModule.id, rIndex, "requires_datetime", !r.requires_datetime, true)}
-                        style={{ fontSize: 11, padding: "6px 10px", borderRadius: 6, cursor: "pointer", background: r.requires_datetime ? "rgba(255,45,79,0.18)" : "rgba(255,255,255,0.06)", color: r.requires_datetime ? "#ffb3c0" : "rgba(233,233,237,0.5)", whiteSpace: "nowrap" }}
-                      >
-                        <i className="fa-solid fa-calendar" /> Fecha y hora
+                    <div key={rIndex} style={{ ...rowShell, flexDirection: "column", alignItems: "stretch", gap: 10 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <GripIcon />
+                        <EmojiPickerButton
+                          value={r.icon}
+                          onChange={(v) => updateRewardField(rewardModule.id, rIndex, "icon", v)}
+                        />
+                        <input
+                          value={r.label}
+                          onChange={(e) => updateRewardField(rewardModule.id, rIndex, "label", e.target.value)}
+                          placeholder={t("dashboardPage.rewardNamePlaceholder")}
+                          style={rowInput}
+                        />
+                        <div style={{ fontSize: 11, color: "rgba(233,233,237,0.5)" }}>{t("dashboardPage.rewardFrom")}</div>
+                        <input
+                          type="number"
+                          value={r.unlock_points ?? ""}
+                          onChange={(e) => updateRewardField(rewardModule.id, rIndex, "unlock_points", e.target.value === "" ? null : parseInt(e.target.value))}
+                          style={pointsInput}
+                        />
+                        <div style={{ fontSize: 11, color: "rgba(233,233,237,0.5)" }}>{t("dashboardPage.rewardPts")}</div>
+                        <div
+                          onClick={() => updateRewardField(rewardModule.id, rIndex, "requires_datetime", !r.requires_datetime, true)}
+                          style={{ fontSize: 11, padding: "6px 10px", borderRadius: 6, cursor: "pointer", background: r.requires_datetime ? "rgba(255,45,79,0.18)" : "rgba(255,255,255,0.06)", color: r.requires_datetime ? "#ffb3c0" : "rgba(233,233,237,0.5)", whiteSpace: "nowrap" }}
+                        >
+                          <i className="fa-solid fa-calendar" /> {t("dashboardPage.rewardDateToggle")}
+                        </div>
+                        <div
+                          onClick={() => updateRewardField(rewardModule.id, rIndex, "one_per_player", !r.one_per_player, true)}
+                          style={{ fontSize: 11, padding: "6px 10px", borderRadius: 6, cursor: "pointer", background: r.one_per_player ? "rgba(255,45,79,0.18)" : "rgba(255,255,255,0.06)", color: r.one_per_player ? "#ffb3c0" : "rgba(233,233,237,0.5)", whiteSpace: "nowrap" }}
+                        >
+                          <i className="fa-solid fa-user-check" /> {t("dashboardPage.rewardOnePerPlayerToggle")}
+                        </div>
+                        <i
+                          onClick={() => deleteReward(rewardModule.id, rIndex)}
+                          className="fa-solid fa-trash"
+                          style={{ color: "rgba(233,233,237,0.4)", fontSize: 13, cursor: "pointer" }}
+                        />
                       </div>
-                      <i
-                        onClick={() => deleteReward(rewardModule.id, rIndex)}
-                        className="fa-solid fa-trash"
-                        style={{ color: "rgba(233,233,237,0.4)", fontSize: 13, cursor: "pointer" }}
+                      <input
+                        value={r.description || ""}
+                        onChange={(e) => updateRewardField(rewardModule.id, rIndex, "description", e.target.value)}
+                        placeholder={t("dashboardPage.rewardDescPlaceholder")}
+                        style={{ ...rowInput, paddingLeft: 44 }}
                       />
                     </div>
                   ))}
                 </div>
                 <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
                   <div onClick={addReward} style={addPill}>
-                    + Agregar recompensa
+                    {t("dashboardPage.addReward")}
                   </div>
                 </div>
                 <div
                   onClick={toggleCustomReward}
-                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: 14, borderRadius: 10, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)", cursor: rewardModule ? "pointer" : "not-allowed", opacity: rewardModule ? 1 : 0.5 }}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: 14, borderRadius: 10, background: "rgba(255,255,255,0.22)", backdropFilter: "blur(28px) saturate(160%)", WebkitBackdropFilter: "blur(28px) saturate(160%)", border: "1px solid rgba(255,255,255,0.34)", boxShadow: "0 8px 32px rgba(0,0,0,0.35)", cursor: rewardModule ? "pointer" : "not-allowed", opacity: rewardModule ? 1 : 0.5 }}
                 >
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>Permitir recompensa personalizada</div>
-                    <div style={{ fontSize: 12, color: "rgba(233,233,237,0.55)", marginTop: 2 }}>El jugador puede proponer la suya, ej. un picnic.</div>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>{t("dashboardPage.customRewardTitle")}</div>
+                    <div style={{ fontSize: 12, color: "rgba(233,233,237,0.55)", marginTop: 2 }}>{t("dashboardPage.customRewardSub")}</div>
                   </div>
                   <div style={{ width: 38, height: 22, borderRadius: 11, background: rewardModule?.custom_reward_limit != null ? "#ff2d4f" : "rgba(255,255,255,0.15)", position: "relative", flex: "none" }}>
                     <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: rewardModule?.custom_reward_limit != null ? 19 : 3, transition: "left 0.2s ease" }} />
                   </div>
                 </div>
+
+                {rewardModule?.custom_reward_limit != null && (
+                  <div style={{ display: "flex", gap: 16, marginTop: 14, flexWrap: "wrap" }}>
+                    <div>
+                      <label style={fieldLabel}>{t("dashboardPage.customRewardLimitLabel")}</label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={rewardModule.custom_reward_limit}
+                        onChange={(e) => updateCustomRewardConfig("custom_reward_limit", Math.max(1, parseInt(e.target.value) || 1))}
+                        style={{ width: 100, height: 38, padding: "0 12px", borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.14)", color: "#e9e9ed", fontSize: 14, fontFamily: "Inter,system-ui,sans-serif" }}
+                      />
+                    </div>
+                    <div>
+                      <label style={fieldLabel}>{t("dashboardPage.customRewardPointsLabel")}</label>
+                      <input
+                        type="number"
+                        value={rewardModule.custom_reward_unlock_points ?? ""}
+                        placeholder={String(fullExperience.reward_threshold)}
+                        onChange={(e) =>
+                          updateCustomRewardConfig(
+                            "custom_reward_unlock_points",
+                            e.target.value === "" ? null : parseInt(e.target.value),
+                          )
+                        }
+                        style={{ width: 140, height: 38, padding: "0 12px", borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.14)", color: "#e9e9ed", fontSize: 14, fontFamily: "Inter,system-ui,sans-serif" }}
+                      />
+                      <div style={{ fontSize: 11, color: "rgba(233,233,237,0.5)", marginTop: 6 }}>{t("dashboardPage.customRewardPointsHint")}</div>
+                    </div>
+                  </div>
+                )}
               </>
             )}
 
             {fullExperience && editorTab === "compartir" && (
-              <div style={{ maxWidth: 440 }}>
-                <div style={{ fontSize: 13, color: "rgba(233,233,237,0.6)", marginBottom: 8 }}>Link de la experiencia</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 10, padding: "10px 12px" }}>
-                  <div style={{ flex: 1, fontSize: 13, fontFamily: "monospace", letterSpacing: "0.02em", color: "#e9e9ed", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {linkRevealed ? link : "••••••••••••••••••"}
+              <div style={{ maxWidth: 440, display: "flex", flexDirection: "column", gap: 20 }}>
+                <div>
+                  <div style={{ fontSize: 13, color: "rgba(233,233,237,0.6)", marginBottom: 8 }}>{t("dashboardPage.shareLinkLabel")}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.22)", backdropFilter: "blur(28px) saturate(160%)", WebkitBackdropFilter: "blur(28px) saturate(160%)", border: "1px solid rgba(255,255,255,0.34)", boxShadow: "0 8px 32px rgba(0,0,0,0.35)", borderRadius: 10, padding: "10px 12px" }}>
+                    <div style={{ flex: 1, fontSize: 13, fontFamily: "monospace", letterSpacing: "0.02em", color: "#e9e9ed", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {linkRevealed ? link : "••••••••••••••••••"}
+                    </div>
+                    <i
+                      onClick={() => setLinkRevealed(!linkRevealed)}
+                      className={`fa-solid ${linkRevealed ? "fa-eye-slash" : "fa-eye"}`}
+                      style={{ cursor: "pointer", color: "rgba(233,233,237,0.6)" }}
+                    />
+                    <div onClick={copyLink} style={{ fontSize: 12, fontWeight: 600, color: "#ffb3c0", cursor: "pointer", whiteSpace: "nowrap" }}>
+                      {linkCopied ? t("dashboardPage.copied") : t("dashboardPage.copy")}
+                    </div>
                   </div>
-                  <i
-                    onClick={() => setLinkRevealed(!linkRevealed)}
-                    className={`fa-solid ${linkRevealed ? "fa-eye-slash" : "fa-eye"}`}
-                    style={{ cursor: "pointer", color: "rgba(233,233,237,0.6)" }}
-                  />
-                  <div onClick={copyLink} style={{ fontSize: 12, fontWeight: 600, color: "#ffb3c0", cursor: "pointer", whiteSpace: "nowrap" }}>
-                    {copyLabel}
+                </div>
+
+                <div>
+                  <div style={{ fontSize: 13, color: "rgba(233,233,237,0.6)", marginBottom: 8 }}>{t("dashboardPage.shareCodeLabel")}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.22)", backdropFilter: "blur(28px) saturate(160%)", WebkitBackdropFilter: "blur(28px) saturate(160%)", border: "1px solid rgba(255,255,255,0.34)", boxShadow: "0 8px 32px rgba(0,0,0,0.35)", borderRadius: 10, padding: "10px 12px" }}>
+                    <div style={{ flex: 1, fontSize: 13, fontFamily: "monospace", letterSpacing: "0.02em", color: "#e9e9ed", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {linkRevealed ? selectedExp.slug : "••••••••••••"}
+                    </div>
+                    <i
+                      onClick={() => setLinkRevealed(!linkRevealed)}
+                      className={`fa-solid ${linkRevealed ? "fa-eye-slash" : "fa-eye"}`}
+                      style={{ cursor: "pointer", color: "rgba(233,233,237,0.6)" }}
+                    />
+                    <div onClick={copyCode} style={{ fontSize: 12, fontWeight: 600, color: "#ffb3c0", cursor: "pointer", whiteSpace: "nowrap" }}>
+                      {codeCopied ? t("dashboardPage.copied") : t("dashboardPage.copy")}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -796,9 +1001,9 @@ export default function DashboardPage() {
 
             {editorTab === "respuestas" && (
               <>
-                {players === null && <p style={{ color: "rgba(233,233,237,0.5)", fontSize: 13 }}>Cargando...</p>}
+                {players === null && <p style={{ color: "rgba(233,233,237,0.5)", fontSize: 13 }}>{t("dashboardPage.answersLoading")}</p>}
                 {players?.length === 0 && (
-                  <p style={{ color: "rgba(233,233,237,0.5)", fontSize: 13, padding: "20px 0" }}>Todavía no hay respuestas para esta experiencia.</p>
+                  <p style={{ color: "rgba(233,233,237,0.5)", fontSize: 13, padding: "20px 0" }}>{t("dashboardPage.answersEmpty")}</p>
                 )}
                 {players?.map((p, i) => (
                   <div
@@ -820,23 +1025,36 @@ export default function DashboardPage() {
                     </div>
                     {expandedPlayer === p.id && (
                       <div style={{ padding: "0 4px 16px 46px", display: "flex", flexDirection: "column", gap: 10 }} onClick={(e) => e.stopPropagation()}>
-                        <div style={{ display: "flex", gap: 14, fontSize: 12 }}>
-                          <div style={{ color: "rgba(233,233,237,0.6)" }}>{p.total_points} pts</div>
-                          <div style={{ color: "#ffb3c0" }}>Recompensa: {p.reward_chosen || "sin recompensa"}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 12 }}>
+                          <div style={{ color: "rgba(233,233,237,0.6)" }}>{p.total_points} {t("dashboardPage.pointsLabel")}</div>
+                          <div style={{ color: "#ffb3c0" }}>{t("dashboardPage.rewardChosenLabel")} {p.reward_chosen || t("dashboardPage.noRewardChosen")}</div>
+                          {p.answers.length > 0 && (
+                            <div
+                              onClick={() => handleDeleteAllAnswers(p.id)}
+                              style={{ marginLeft: "auto", fontSize: 11, color: "#ff2d4f", textDecoration: "underline", cursor: "pointer", whiteSpace: "nowrap" }}
+                            >
+                              {t("dashboardPage.deleteAllAnswers")}
+                            </div>
+                          )}
                         </div>
-                        {p.answers.map((a, ai) => (
-                          <div key={ai} style={{ background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "10px 12px" }}>
-                            <div style={{ fontSize: 11, color: "rgba(233,233,237,0.5)", marginBottom: 3 }}>{a.prompt}</div>
-                            {a.skipped ? (
-                              <div style={{ color: "rgba(233,233,237,0.5)", fontStyle: "italic", fontSize: 13 }}>(saltada)</div>
-                            ) : a.response_image_url ? (
+                        {p.answers.map((a) => (
+                          <div key={a.id} style={{ background: "rgba(255,255,255,0.22)", backdropFilter: "blur(28px) saturate(160%)", WebkitBackdropFilter: "blur(28px) saturate(160%)", border: "1px solid rgba(255,255,255,0.34)", boxShadow: "0 8px 32px rgba(0,0,0,0.35)", borderRadius: 8, padding: "10px 12px" }}>
+                            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 3 }}>
+                              <div style={{ fontSize: 11, color: "rgba(233,233,237,0.5)" }}>{a.prompt}</div>
+                              <i
+                                onClick={() => handleDeleteAnswer(p.id, a.id)}
+                                className="fa-solid fa-trash"
+                                style={{ color: "rgba(233,233,237,0.4)", fontSize: 12, cursor: "pointer", flex: "none" }}
+                              />
+                            </div>
+                            {a.response_image_url ? (
                               <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
                                 <img src={resolveImageUrl(a.response_image_url)} alt="" style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(255,255,255,0.2)" }} />
                                 <span
                                   onClick={() => handleDeletePhoto(p.id, a.id, a.response_image_id)}
                                   style={{ fontSize: 11, color: "#ff2d4f", textDecoration: "underline", cursor: "pointer" }}
                                 >
-                                  borrar foto
+                                  {t("dashboardPage.deletePhotoLink")}
                                 </span>
                               </div>
                             ) : (

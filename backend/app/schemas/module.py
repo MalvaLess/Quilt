@@ -11,12 +11,14 @@ class QuestionCreate(BaseModel):
 
 
 class RewardOptionCreate(BaseModel):
+    id: int | None = None
     label: str
     description: str | None = None
     icon: str | None = None
     order_index: int = 0
     unlock_points: int | None = None
     requires_datetime: bool = False
+    one_per_player: bool = False
 
 
 class ModuleCreate(BaseModel):
@@ -25,6 +27,7 @@ class ModuleCreate(BaseModel):
     questions: list[QuestionCreate] = []
     reward_options: list[RewardOptionCreate] = []
     custom_reward_limit: int | None = None
+    custom_reward_unlock_points: int | None = None
 
 
 class ModuleUpdate(BaseModel):
@@ -32,3 +35,4 @@ class ModuleUpdate(BaseModel):
     questions: list[QuestionCreate] | None = None
     reward_options: list[RewardOptionCreate] | None = None
     custom_reward_limit: int | None = None
+    custom_reward_unlock_points: int | None = None

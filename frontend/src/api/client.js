@@ -5,26 +5,65 @@ export function resolveImageUrl(path) {
   return path ? `${API_ORIGIN}${path}` : null;
 }
 
+// GETs are cached briefly (in-memory, per tab) so switching views/expanding
+// cards doesn't re-fire the same requests within the window. Any write
+// (non-GET) invalidates the whole cache so stale reads never survive a mutation.
+const GET_CACHE_TTL_MS = 30_000;
+const getCache = new Map(); // path -> { data, expiry }
+const inFlightGets = new Map(); // path -> Promise
+
+export function clearApiCache() {
+  getCache.clear();
+  inFlightGets.clear();
+}
+
 async function request(path, options = {}) {
-  const token = localStorage.getItem("quilt_token");
-  const res = await fetch(`${API_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    ...options,
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    const error = new Error(err.detail || "Error en la petición");
-    error.status = res.status;
-    throw error;
+  const method = (options.method || "GET").toUpperCase();
+  const isGet = method === "GET";
+
+  if (isGet) {
+    const cached = getCache.get(path);
+    if (cached && cached.expiry > Date.now()) return cached.data;
+    const pending = inFlightGets.get(path);
+    if (pending) return pending;
   }
-  return res.json();
+
+  const token = localStorage.getItem("quilt_token");
+  const promise = (async () => {
+    const res = await fetch(`${API_URL}${path}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      ...options,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      const error = new Error(err.detail || "Error en la petición");
+      error.status = res.status;
+      throw error;
+    }
+    return res.json();
+  })();
+
+  if (isGet) {
+    inFlightGets.set(path, promise);
+  } else {
+    getCache.clear();
+  }
+
+  try {
+    const data = await promise;
+    if (isGet) getCache.set(path, { data, expiry: Date.now() + GET_CACHE_TTL_MS });
+    return data;
+  } finally {
+    if (isGet) inFlightGets.delete(path);
+  }
 }
 
 async function uploadRequest(path, formData) {
   const token = localStorage.getItem("quilt_token");
+  getCache.clear();
   const res = await fetch(`${API_URL}${path}`, {
     method: "POST",
     headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
@@ -92,9 +131,31 @@ export const api = {
       body: JSON.stringify({ email, password }),
     }),
   getCurrentCreator: () => request("/auth/me"),
-  listExperiences: () => request("/experiences/"),
+  updateMe: (data) =>
+    request("/auth/me", {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+  changePassword: (currentPassword, newPassword) =>
+    request("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+    }),
+  deleteAccount: (password) =>
+    request("/auth/delete-account", {
+      method: "POST",
+      body: JSON.stringify({ password }),
+    }),
   listMyExperiences: () => request("/experiences/mine"),
   getPlayers: (experienceId) => request(`/experiences/${experienceId}/players`),
+  deleteAnswer: (playerId, answerId) =>
+    request(`/players/${playerId}/answers/${answerId}`, {
+      method: "DELETE",
+    }),
+  deleteAllAnswers: (playerId) =>
+    request(`/players/${playerId}/answers`, {
+      method: "DELETE",
+    }),
   getExperienceFull: (id) => request(`/experiences/${id}/full`),
   createExperience: (data) =>
     request(`/experiences/`, {

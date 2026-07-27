@@ -14,5 +14,6 @@ class RewardOption(Base):
     order_index = Column(Integer, default=0)
     unlock_points = Column(Integer, nullable=True)
     requires_datetime = Column(Boolean, nullable=False, default=False, server_default="false")
+    one_per_player = Column(Boolean, nullable=False, default=False, server_default="false")
 
     module = relationship("Module", back_populates="reward_options")

@@ -11,6 +11,7 @@ class Module(Base):
     type = Column(String, nullable=False)  # question | minigame | reward_picker | info
     order_index = Column(Integer, nullable=False, default=0)
     custom_reward_limit = Column(Integer, nullable=True)  # solo aplica a reward_picker; None/0 = deshabilitado
+    custom_reward_unlock_points = Column(Integer, nullable=True)  # umbral propio; None = usa el threshold global
 
     experience = relationship("Experience", back_populates="modules")
     questions = relationship(

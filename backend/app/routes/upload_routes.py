@@ -1,9 +1,10 @@
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.creator import Creator
 from app.models.uploaded_image import UploadedImage
+from app.rate_limit import limiter
 from app.services.auth_service import get_current_creator
 from app.services.uploads import (
     ALLOWED_CONTENT_TYPES,
@@ -17,7 +18,9 @@ router = APIRouter(prefix="/api/uploads", tags=["uploads"])
 
 
 @router.post("/images")
+@limiter.limit("20/minute")
 async def upload_image(
+    request: Request,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_creator: Creator = Depends(get_current_creator),
@@ -31,7 +34,7 @@ async def upload_image(
             413, f"La imagen supera el límite de {MAX_UPLOAD_SIZE_BYTES // (1024 * 1024)}MB"
         )
 
-    stored_filename = save_image_file(content, file.filename or "image")
+    stored_filename = save_image_file(content, file.content_type)
     image = UploadedImage(
         creator_id=current_creator.id,
         original_filename=file.filename or "image",

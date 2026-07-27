@@ -50,4 +50,6 @@ def get_current_creator(
     creator = db.query(Creator).get(int(payload["sub"]))
     if not creator:
         raise HTTPException(401, "Creador no encontrado")
+    if creator.deleted_at is not None:
+        raise HTTPException(401, "Cuenta eliminada")
     return creator

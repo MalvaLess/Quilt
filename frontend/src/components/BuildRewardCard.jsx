@@ -1,4 +1,7 @@
+import { useLanguage } from "../i18n/LanguageContext";
+
 export default function BuildRewardCard({ active, onOpen }) {
+  const { t } = useLanguage();
   return (
     <div
       onClick={onOpen}
@@ -17,7 +20,7 @@ export default function BuildRewardCard({ active, onOpen }) {
     >
       <div style={{ fontSize: 22 }}>✨</div>
       <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 13, color: active ? "var(--color-gem-light)" : "#e9e9ed" }}>
-        Creá la tuya
+        {t("playApp.createYours")}
       </div>
     </div>
   );

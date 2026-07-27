@@ -24,11 +24,6 @@ def create_experience(
     return exp
 
 
-@router.get("/", response_model=list[ExperienceOut])
-def list_experiences(db: Session = Depends(get_db)):
-    return db.query(Experience).all()
-
-
 @router.get("/mine", response_model=list[ExperienceOut])
 def list_my_experiences(
     db: Session = Depends(get_db),
@@ -38,11 +33,12 @@ def list_my_experiences(
 
 
 @router.get("/{experience_id}", response_model=ExperienceOut)
-def get_experience(experience_id: int, db: Session = Depends(get_db)):
-    exp = db.query(Experience).get(experience_id)
-    if not exp:
-        raise HTTPException(404, "No encontrada")
-    return exp
+def get_experience(
+    experience_id: int,
+    db: Session = Depends(get_db),
+    current_creator: Creator = Depends(get_current_creator),
+):
+    return get_owned_experience(experience_id, current_creator, db)
 
 
 @router.get("/{experience_id}/full")
@@ -60,6 +56,7 @@ def get_experience_full(
         "description": exp.description,
         "status": exp.status,
         "reward_threshold": exp.reward_threshold,
+        "spend_points_on_claim": exp.spend_points_on_claim,
         "modules": [
             {
                 "id": m.id,
@@ -87,6 +84,7 @@ def get_experience_full(
                         "icon": r.icon,
                         "unlock_points": r.unlock_points,
                         "requires_datetime": r.requires_datetime,
+                        "one_per_player": r.one_per_player,
                     }
                     for r in m.reward_options
                 ],

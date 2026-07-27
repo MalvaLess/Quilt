@@ -3,12 +3,14 @@ import { useParams } from "react-router-dom";
 import { usePlaySession } from "./usePlaySession";
 import { api } from "../../api/client";
 import { darkenHex, lightenHex } from "../../utils/color";
+import { useLanguage } from "../../i18n/LanguageContext";
 import WelcomeScreen from "../../components/WelcomeScreen";
 import Logo from "../../components/Logo";
 import QuestionCard from "../../components/QuestionCard";
 import PlayerButton from "../../components/PlayerButton";
 import RewardCard from "../../components/RewardCard";
 import BuildRewardCard from "../../components/BuildRewardCard";
+import EmojiPickerButton from "../../components/EmojiPickerButton";
 
 const DEFAULT_NEEDED_POINTS = 60;
 
@@ -25,6 +27,7 @@ const inputStyle = {
 
 export default function PlayPage() {
   const { slug } = useParams();
+  const { t } = useLanguage();
   const [screen, setScreen] = useState("welcome"); // welcome | play | rewards | schedule | confirmed
   const { token, current, loading, error, start, answer, skip, answerPhoto } = usePlaySession(slug);
   const [rewards, setRewards] = useState(null);
@@ -121,7 +124,7 @@ export default function PlayPage() {
 
   const submitCustomReward = async () => {
     if (!buildForm.label.trim()) {
-      setBuildError("Ponele un nombre a tu recompensa");
+      setBuildError(t("playApp.customRewardNameError"));
       return;
     }
     try {
@@ -156,8 +159,8 @@ export default function PlayPage() {
     "--color-gem-dark": darkenHex(gem, 0.22),
   };
 
-  if (infoError) return <p style={{ color: "#ff2d4f", padding: 32 }}>Error: {infoError}</p>;
-  if (error) return <p style={{ color: "#ff2d4f", padding: 32 }}>Error: {error}</p>;
+  if (infoError) return <p style={{ color: "#ff2d4f", padding: 32 }}>{t("playApp.errorPrefix")} {infoError}</p>;
+  if (error) return <p style={{ color: "#ff2d4f", padding: 32 }}>{t("playApp.errorPrefix")} {error}</p>;
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0d", color: "#e9e9ed", fontFamily: "Inter,system-ui,sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 20px", ...themeStyle }}>
@@ -165,7 +168,7 @@ export default function PlayPage() {
       <div style={{ width: "100%", maxWidth: 440, background: "rgba(255,255,255,0.045)", backdropFilter: "blur(14px)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, boxShadow: "0 24px 60px rgba(0,0,0,0.5)", padding: 32 }}>
         {screen === "welcome" && <WelcomeScreen experienceInfo={experienceInfo} onSubmit={handleNameSubmit} />}
 
-        {loading && screen !== "welcome" && <p style={{ fontSize: 14, color: "rgba(233,233,237,0.6)" }}>Cargando...</p>}
+        {loading && screen !== "welcome" && <p style={{ fontSize: 14, color: "rgba(233,233,237,0.6)" }}>{t("playApp.loading")}</p>}
 
         {screen === "play" && current && !loading && (
           <>
@@ -184,18 +187,18 @@ export default function PlayPage() {
 
             {current.module_type === "done" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 16, textAlign: "center" }}>
-                <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 18 }}>¡Terminaste las preguntas!</div>
+                <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 18 }}>{t("playApp.finishedQuestions")}</div>
                 {current.rewards_unlocked ? (
                   <>
                     <p style={{ fontSize: 13, color: "rgba(233,233,237,0.65)", margin: 0 }}>
-                      Llevás {current.total_points ?? 0} pts. Ya podés elegir tu recompensa.
+                      {t("playApp.readyToChoose").replace("{points}", current.total_points ?? 0)}
                     </p>
-                    <PlayerButton label="Ver mis recompensas" onClick={loadRewards} />
+                    <PlayerButton label={t("playApp.viewMyRewards")} onClick={loadRewards} />
                     {rewardsError && <p style={{ color: "#ff2d4f", fontSize: 13 }}>{rewardsError}</p>}
                   </>
                 ) : (
                   <p style={{ fontSize: 13, color: "rgba(233,233,237,0.65)", margin: 0 }}>
-                    Todavía no llegaste al puntaje necesario para desbloquear una recompensa.
+                    {t("playApp.notEnoughPoints")}
                   </p>
                 )}
               </div>
@@ -206,15 +209,15 @@ export default function PlayPage() {
         {screen === "rewards" && rewards && (
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(233,233,237,0.5)" }}>
-              Llevás {current?.total_points ?? 0} pts
+              {t("playApp.youHave")} {current?.total_points ?? 0} {t("playApp.points")}
             </div>
-            <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 20 }}>Elegí tu recompensa</div>
+            <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 20 }}>{t("playApp.chooseReward")}</div>
 
             {rewards.options.length === 0 &&
               rewards.custom.created.length === 0 &&
               !(rewards.custom.enabled && rewards.custom.remaining > 0) && (
                 <p style={{ fontSize: 13, color: "rgba(233,233,237,0.6)" }}>
-                  Todavía no hay recompensas cargadas para esta experiencia.
+                  {t("playApp.noRewardsYet")}
                 </p>
               )}
 
@@ -223,9 +226,10 @@ export default function PlayPage() {
                 <RewardCard
                   key={`option-${r.id}`}
                   reward={r}
-                  isSelected={selected?.kind === "option" && selected?.id === r.id}
+                  isSelected={!showBuildForm && selected?.kind === "option" && selected?.id === r.id}
                   onSelect={() => {
                     setSelected({ kind: "option", id: r.id });
+                    setShowBuildForm(false);
                     setShowRewardError(false);
                   }}
                 />
@@ -234,32 +238,51 @@ export default function PlayPage() {
                 <RewardCard
                   key={`custom-${r.id}`}
                   reward={r}
-                  isSelected={selected?.kind === "custom" && selected?.id === r.id}
+                  isSelected={!showBuildForm && selected?.kind === "custom" && selected?.id === r.id}
                   onSelect={() => {
                     setSelected({ kind: "custom", id: r.id });
+                    setShowBuildForm(false);
                     setShowRewardError(false);
                   }}
                 />
               ))}
               {rewards.custom.enabled && rewards.custom.remaining > 0 && (
-                <BuildRewardCard active={showBuildForm} onOpen={() => setShowBuildForm(true)} />
+                <BuildRewardCard
+                  active={showBuildForm}
+                  onOpen={() => {
+                    setSelected(null);
+                    setShowBuildForm(true);
+                    setShowRewardError(false);
+                  }}
+                />
               )}
             </div>
 
             {showBuildForm && (
-              <input
-                type="text"
-                value={buildForm.label}
-                onChange={(e) => setBuildForm({ ...buildForm, label: e.target.value })}
-                placeholder="Ej: un picnic el sábado"
-                style={inputStyle}
-              />
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <EmojiPickerButton value={buildForm.icon} onChange={(v) => setBuildForm({ ...buildForm, icon: v })} />
+                  <input
+                    type="text"
+                    value={buildForm.label}
+                    onChange={(e) => setBuildForm({ ...buildForm, label: e.target.value })}
+                    placeholder={t("playApp.customRewardPlaceholder")}
+                    style={{ ...inputStyle, flex: 1 }}
+                  />
+                </div>
+                <textarea
+                  value={buildForm.description}
+                  onChange={(e) => setBuildForm({ ...buildForm, description: e.target.value })}
+                  placeholder={t("playApp.customRewardDescPlaceholder")}
+                  style={{ ...inputStyle, height: 64, resize: "none", padding: "10px 12px" }}
+                />
+              </div>
             )}
 
-            {showRewardError && <div style={{ fontSize: 12, color: "#ff2d4f" }}>Elegí una recompensa para continuar.</div>}
+            {showRewardError && <div style={{ fontSize: 12, color: "#ff2d4f" }}>{t("playApp.selectRewardError")}</div>}
 
             <div>
-              <PlayerButton label="Continuar" onClick={showBuildForm ? submitCustomReward : handleConfirmClick} />
+              <PlayerButton label={t("playApp.continue")} onClick={showBuildForm ? submitCustomReward : handleConfirmClick} />
             </div>
             {buildError && <p style={{ color: "#ff2d4f", fontSize: 12 }}>{buildError}</p>}
             {rewardsError && <p style={{ color: "#ff2d4f", fontSize: 13 }}>{rewardsError}</p>}
@@ -268,14 +291,14 @@ export default function PlayPage() {
 
         {screen === "schedule" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 20 }}>¿Cuándo?</div>
-            <p style={{ fontSize: 13, color: "rgba(233,233,237,0.65)", margin: 0 }}>Elegí fecha y hora para tu recompensa.</p>
+            <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 20 }}>{t("playApp.whenTitle")}</div>
+            <p style={{ fontSize: 13, color: "rgba(233,233,237,0.65)", margin: 0 }}>{t("playApp.whenSubtitle")}</p>
             <div style={{ display: "flex", gap: 8 }}>
               <input type="date" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
               <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
             </div>
             <div>
-              <PlayerButton label="Confirmar" onClick={handleConfirmSchedule} disabled={!scheduleDate || !scheduleTime} />
+              <PlayerButton label={t("playApp.confirm")} onClick={handleConfirmSchedule} disabled={!scheduleDate || !scheduleTime} />
             </div>
           </div>
         )}
@@ -283,16 +306,16 @@ export default function PlayPage() {
         {screen === "confirmed" && confirmedInfo && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 14 }}>
             <i className="fa-solid fa-circle-check" style={{ fontSize: 40, color: "var(--color-gem)" }} />
-            <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 20 }}>¡Gracias, {playerName}!</div>
+            <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 20 }}>{t("playApp.thanks").replace("{name}", playerName)}</div>
             <p style={{ fontSize: 13, color: "rgba(233,233,237,0.65)", margin: 0, maxWidth: "28ch" }}>
-              Tu regalo fue elegido y enviado a quien armó esta encuesta.
+              {t("playApp.giftSentMsg")}
             </p>
             <div style={{ fontSize: 12, background: "rgba(255,255,255,0.05)", borderRadius: 8, padding: "10px 16px" }}>
               {confirmedInfo.reward}
-              {confirmedInfo.date && confirmedInfo.time ? ` · ${confirmedInfo.date} ${confirmedInfo.time}` : ""} · {current?.total_points ?? 0} pts
+              {confirmedInfo.date && confirmedInfo.time ? ` · ${confirmedInfo.date} ${confirmedInfo.time}` : ""} · {current?.total_points ?? 0} {t("playApp.points")}
             </div>
             <div style={{ width: "100%", marginTop: 6 }}>
-              <PlayerButton label="Volver a jugar" onClick={restart} />
+              <PlayerButton label={t("playApp.playAgain")} onClick={restart} />
             </div>
           </div>
         )}

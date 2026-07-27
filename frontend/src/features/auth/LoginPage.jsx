@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { api } from "../../api/client";
 import logoMark from "../../assets/quilt-logo-mark.png";
 import Logo from "../../components/Logo";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 const inputStyle = {
   width: "100%",
@@ -17,6 +18,7 @@ const inputStyle = {
 };
 
 export default function LoginPage() {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -24,8 +26,9 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
-      const { access_token } = await api.login(email, password);
+      const { access_token, reactivated } = await api.login(email, password);
       localStorage.setItem("quilt_token", access_token);
+      if (reactivated) localStorage.setItem("quilt_reactivated", "1");
       navigate("/dashboard");
     } catch (e) {
       setError(e.message);
@@ -38,30 +41,30 @@ export default function LoginPage() {
       <div style={{ width: "100%", maxWidth: 380, background: "rgba(255,255,255,0.045)", backdropFilter: "blur(14px)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, padding: 32 }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginBottom: 22 }}>
           <img src={logoMark} alt="Quilt" style={{ width: 36, height: 36, borderRadius: 9 }} />
-          <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 19 }}>Iniciar sesión</div>
+          <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 19 }}>{t("auth.loginTitle")}</div>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {error && <p style={{ color: "#ff2d4f", fontSize: 13, margin: 0 }}>{error}</p>}
           <div>
-            <label style={{ fontSize: 12, color: "rgba(233,233,237,0.6)", display: "block", marginBottom: 6 }}>Email</label>
+            <label style={{ fontSize: 12, color: "rgba(233,233,237,0.6)", display: "block", marginBottom: 6 }}>{t("auth.email")}</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              placeholder="vos@email.com"
+              placeholder={t("auth.emailPlaceholder")}
               style={inputStyle}
             />
           </div>
           <div>
-            <label style={{ fontSize: 12, color: "rgba(233,233,237,0.6)", display: "block", marginBottom: 6 }}>Contraseña</label>
+            <label style={{ fontSize: 12, color: "rgba(233,233,237,0.6)", display: "block", marginBottom: 6 }}>{t("auth.password")}</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              placeholder="••••••••"
+              placeholder={t("auth.passwordPlaceholder")}
               style={inputStyle}
             />
           </div>
@@ -69,14 +72,14 @@ export default function LoginPage() {
             onClick={handleLogin}
             style={{ display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 14, color: "#ffb3c0", background: "rgba(255,45,79,0.16)", border: "1.5px solid #ff2d4f", borderRadius: 9, padding: 12, boxShadow: "0 0 18px rgba(255,45,79,0.3)", cursor: "pointer", marginTop: 6 }}
           >
-            Entrar
+            {t("auth.enterCta")}
           </div>
         </div>
 
         <div style={{ textAlign: "center", fontSize: 13, color: "rgba(233,233,237,0.55)", marginTop: 18 }}>
-          ¿No tenés cuenta?{" "}
+          {t("auth.noAccount")}{" "}
           <Link to="/register" style={{ color: "#ffb3c0", fontWeight: 600 }}>
-            Registrate
+            {t("auth.registerLink")}
           </Link>
         </div>
       </div>
