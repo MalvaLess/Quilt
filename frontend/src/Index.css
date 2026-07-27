@@ -1,29 +1,28 @@
 @import "tailwindcss";
 
 @theme {
-  --color-void: #150d21;
-  --color-void-2: #1e1330;
-  --color-raven: #4c2f7a;
-  --color-raven-light: #7c5cc7;
-  --color-indigo: #362159;
-  --color-gem: #b3273e;
-  --color-gem-dark: #8f1e30;
-  --color-parchment: #e9e2f5;
-  --color-parchment-dim: #b8aecf;
-  --color-mustard: #e8a33d;
-  --color-plum: #6b4c6b;
+  --color-ink: #050505;
+  --color-panel: #171217;
+  --color-panel-2: #1f151a;
+  --color-mist: #e9e9ed;
+  --color-gem: #ff2d4f;
+  --color-gem-dark: #c21f3c;
+  --color-gem-light: #ffb3c0;
 
-  --font-display: "Cinzel", serif;
   --font-mono: "JetBrains Mono", monospace;
-  --font-sans: "Space Grotesk", sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
 }
 
 body {
   background:
-    radial-gradient(circle at 15% 10%, rgba(214,41,75,0.10), transparent 40%),
-    radial-gradient(circle at 85% 90%, rgba(232,163,61,0.08), transparent 45%),
-    var(--color-void);
+    radial-gradient(circle at 15% 10%, rgba(255,45,79,0.10), transparent 40%),
+    radial-gradient(circle at 85% 90%, rgba(255,45,79,0.06), transparent 45%),
+    var(--color-ink);
   min-height: 100vh;
+}
+
+::selection {
+  background: rgba(255,45,79,0.32);
 }
 
 @keyframes pin {

@@ -1,6 +1,20 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { api } from "../../api/client";
+import logoMark from "../../assets/quilt-logo-mark.png";
+import Logo from "../../components/Logo";
+
+const inputStyle = {
+  width: "100%",
+  height: 42,
+  padding: "0 12px",
+  borderRadius: 9,
+  background: "rgba(255,255,255,0.04)",
+  border: "1px solid rgba(255,255,255,0.14)",
+  color: "#e9e9ed",
+  fontSize: 14,
+  fontFamily: "Inter,system-ui,sans-serif",
+};
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -19,34 +33,52 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center text-parchment font-sans relative overflow-hidden">
-      <div className="glow-blob absolute -top-16 -left-16 w-64 h-64 rounded-full bg-gem opacity-20" />
-      <div className="glow-blob-alt absolute -bottom-16 -right-16 w-64 h-64 rounded-full bg-mustard opacity-10" />
-      <div className="screen-enter relative bg-void-2 border border-white/10 rounded-2xl p-8 w-full max-w-sm">
-        <h1 className="font-display text-2xl mb-4">Login creador</h1>
-        {error && <p className="text-gem mb-2 text-sm">{error}</p>}
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="email"
-          className="w-full rounded-lg border border-white/20 bg-void p-3 text-sm mb-3"
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="contraseña"
-          className="w-full rounded-lg border border-white/20 bg-void p-3 text-sm mb-4"
-        />
-        <button
-          onClick={handleLogin}
-          className="btn-fill w-full bg-gem py-3 rounded-xl font-semibold"
-        >
-          Entrar
-        </button>
-        <p className="text-parchment-dim text-xs mt-4 text-center">
-          ¿No tenés cuenta? <Link to="/register" className="underline">Registrate</Link>
-        </p>
+    <div style={{ minHeight: "100vh", background: "#050505", color: "#e9e9ed", fontFamily: "Inter,system-ui,sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
+      <Logo style={{ position: "fixed", top: 24, left: 28 }} />
+      <div style={{ width: "100%", maxWidth: 380, background: "rgba(255,255,255,0.045)", backdropFilter: "blur(14px)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, padding: 32 }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginBottom: 22 }}>
+          <img src={logoMark} alt="Quilt" style={{ width: 36, height: 36, borderRadius: 9 }} />
+          <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 19 }}>Iniciar sesión</div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {error && <p style={{ color: "#ff2d4f", fontSize: 13, margin: 0 }}>{error}</p>}
+          <div>
+            <label style={{ fontSize: 12, color: "rgba(233,233,237,0.6)", display: "block", marginBottom: 6 }}>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              placeholder="vos@email.com"
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label style={{ fontSize: 12, color: "rgba(233,233,237,0.6)", display: "block", marginBottom: 6 }}>Contraseña</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              placeholder="••••••••"
+              style={inputStyle}
+            />
+          </div>
+          <div
+            onClick={handleLogin}
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 14, color: "#ffb3c0", background: "rgba(255,45,79,0.16)", border: "1.5px solid #ff2d4f", borderRadius: 9, padding: 12, boxShadow: "0 0 18px rgba(255,45,79,0.3)", cursor: "pointer", marginTop: 6 }}
+          >
+            Entrar
+          </div>
+        </div>
+
+        <div style={{ textAlign: "center", fontSize: 13, color: "rgba(233,233,237,0.55)", marginTop: 18 }}>
+          ¿No tenés cuenta?{" "}
+          <Link to="/register" style={{ color: "#ffb3c0", fontWeight: 600 }}>
+            Registrate
+          </Link>
+        </div>
       </div>
     </div>
   );

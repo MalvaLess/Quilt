@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<sc-if value="{{ selRojo }}" hint-placeholder-val="{{ false }}">
+  <div onclick="{{ onClick }}" style="font-size:14px;padding:13px 14px;border-radius:9px;cursor:pointer;background:rgba(255,45,79,0.14);border:1.5px solid #ff2d4f;color:#ffb3c0;font-weight:600;">{{ label }}</div>
+</sc-if>
+<sc-if value="{{ selVerde }}" hint-placeholder-val="{{ false }}">
+  <div onclick="{{ onClick }}" style="font-size:14px;padding:13px 14px;border-radius:9px;cursor:pointer;background:rgba(46,204,113,0.14);border:1.5px solid #2ecc71;color:#a8f0c6;font-weight:600;">{{ label }}</div>
+</sc-if>
+<sc-if value="{{ selAzul }}" hint-placeholder-val="{{ false }}">
+  <div onclick="{{ onClick }}" style="font-size:14px;padding:13px 14px;border-radius:9px;cursor:pointer;background:rgba(79,157,255,0.14);border:1.5px solid #4f9dff;color:#b8dcff;font-weight:600;">{{ label }}</div>
+</sc-if>
+<sc-if value="{{ selDorado }}" hint-placeholder-val="{{ false }}">
+  <div onclick="{{ onClick }}" style="font-size:14px;padding:13px 14px;border-radius:9px;cursor:pointer;background:rgba(232,177,58,0.14);border:1.5px solid #e8b13a;color:#ffe3a8;font-weight:600;">{{ label }}</div>
+</sc-if>
+<sc-if value="{{ unselected }}" hint-placeholder-val="{{ true }}">
+  <div onclick="{{ onClick }}" style="font-size:14px;padding:13px 14px;border-radius:9px;cursor:pointer;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.14);color:#e9e9ed;">{{ label }}</div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:220,&quot;height&quot;:48},&quot;label&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Opción&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;selected&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;rojo&quot;,&quot;options&quot;:[&quot;rojo&quot;,&quot;verde&quot;,&quot;azul&quot;,&quot;dorado&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;onClick&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;() =&gt; void&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const theme = this.props.theme ?? "rojo";
+    const selected = this.props.selected ?? false;
+    return {
+      label: this.props.label ?? "",
+      onClick: this.props.onClick ?? (() => {}),
+      unselected: !selected,
+      selRojo: selected && theme === "rojo",
+      selVerde: selected && theme === "verde",
+      selAzul: selected && theme === "azul",
+      selDorado: selected && theme === "dorado"
+    };
+  }
+}
+
+</script>
+</body>
+</html>

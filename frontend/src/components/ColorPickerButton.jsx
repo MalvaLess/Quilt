@@ -1,18 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 
 const PRESET_COLORS = [
-  "#b3273e",
-  "#8f1e30",
-  "#e8a33d",
-  "#c2185b",
-  "#d84315",
-  "#7c5cc7",
-  "#4c2f7a",
-  "#5e35b1",
-  "#1f6fb2",
-  "#00897b",
-  "#2f6f5e",
-  "#37474f",
+  "#ff2d4f",
+  "#a31f3a",
+  "#e8b13a",
+  "#d1237a",
+  "#e0672a",
+  "#6c5ce7",
+  "#4b3f9e",
+  "#7d3fe0",
+  "#2f8fd1",
+  "#16a37a",
+  "#2f9e6e",
+  "#345b52",
 ];
 
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
@@ -42,61 +42,45 @@ export default function ColorPickerButton({ value, onChange }) {
   };
 
   return (
-    <div className="relative inline-block" ref={ref}>
-      <button
-        type="button"
+    <div style={{ position: "relative", display: "inline-block" }} ref={ref}>
+      <div
         onClick={toggleOpen}
-        className="btn-ghost flex items-center gap-2 rounded-lg border border-white/20 bg-void px-3 py-2 text-sm"
+        style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.14)", cursor: "pointer" }}
       >
-        <span
-          className="w-5 h-5 rounded-full border border-white/30 shrink-0"
-          style={{ backgroundColor: HEX_RE.test(value) ? value : "#000" }}
-        />
-        <span className="font-mono text-xs text-parchment-dim">{value}</span>
-      </button>
+        <div style={{ width: 18, height: 18, borderRadius: "50%", background: HEX_RE.test(value) ? value : "#000", border: "1px solid rgba(255,255,255,0.2)" }} />
+        <div style={{ fontSize: 13, fontFamily: "monospace" }}>{value}</div>
+      </div>
 
       {open && (
-        <div className="screen-enter absolute z-20 mt-2 p-3 bg-void-2 border border-white/15 rounded-xl shadow-2xl w-56">
-          <div className="grid grid-cols-6 gap-2 mb-3">
+        <div style={{ position: "absolute", top: 70, left: 0, zIndex: 10, background: "#130f11", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, padding: 14, boxShadow: "0 16px 40px rgba(0,0,0,0.5)", width: 260 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 8, marginBottom: 12 }}>
             {PRESET_COLORS.map((c) => (
-              <button
+              <div
                 key={c}
-                type="button"
                 title={c}
                 onClick={() => {
                   onChange(c);
                   setOpen(false);
                 }}
-                className="tile-interactive w-7 h-7 rounded-full border-2"
-                style={{
-                  backgroundColor: c,
-                  borderColor: c.toLowerCase() === value.toLowerCase() ? "#fff" : "transparent",
-                }}
+                style={{ width: 28, height: 28, borderRadius: "50%", background: c, cursor: "pointer", border: `2px solid ${c.toLowerCase() === value.toLowerCase() ? "#fff" : "transparent"}` }}
               />
             ))}
           </div>
-          <div className="flex items-center gap-2">
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <input
               value={hexInput}
               onChange={(e) => applyHex(e.target.value)}
-              placeholder="#rrggbb"
-              className="flex-1 min-w-0 rounded-lg border border-white/20 bg-void px-2 py-1.5 text-xs font-mono"
+              style={{ flex: 1, height: 36, padding: "0 10px", borderRadius: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.14)", color: "#e9e9ed", fontSize: 12, fontFamily: "monospace" }}
             />
-            <label
-              title="Selector de color completo"
-              className="icon-btn w-7 h-7 rounded-lg border border-white/20 flex items-center justify-center shrink-0 cursor-pointer text-sm"
-            >
-              🎨
-              <input
-                type="color"
-                value={HEX_RE.test(value) ? value : "#b3273e"}
-                onChange={(e) => {
-                  setHexInput(e.target.value);
-                  onChange(e.target.value);
-                }}
-                className="sr-only"
-              />
-            </label>
+            <input
+              type="color"
+              value={HEX_RE.test(value) ? value : "#ff2d4f"}
+              onChange={(e) => {
+                setHexInput(e.target.value);
+                onChange(e.target.value);
+              }}
+              style={{ width: 36, height: 36, padding: 0, borderRadius: 8, border: "1px solid rgba(255,255,255,0.14)", background: "none", cursor: "pointer" }}
+            />
           </div>
         </div>
       )}

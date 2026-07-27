@@ -2,23 +2,31 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { usePlaySession } from "./usePlaySession";
 import { api } from "../../api/client";
-import { darkenHex } from "../../utils/color";
-import NameGate from "../../components/NameGate";
-import CoverScreen from "../../components/CoverScreen";
+import { darkenHex, lightenHex } from "../../utils/color";
+import WelcomeScreen from "../../components/WelcomeScreen";
+import Logo from "../../components/Logo";
 import QuestionCard from "../../components/QuestionCard";
-import PatchCard from "../../components/PatchCard";
-import ProgressDots from "../../components/ProgressDots";
+import PlayerButton from "../../components/PlayerButton";
 import RewardCard from "../../components/RewardCard";
 import BuildRewardCard from "../../components/BuildRewardCard";
 
-const POINTS_PER_QUESTION = 15;
 const DEFAULT_NEEDED_POINTS = 60;
+
+const inputStyle = {
+  height: 44,
+  padding: "0 10px",
+  borderRadius: 9,
+  background: "rgba(255,255,255,0.04)",
+  border: "1px solid rgba(255,255,255,0.14)",
+  color: "#e9e9ed",
+  fontSize: 13,
+  fontFamily: "Inter,system-ui,sans-serif",
+};
 
 export default function PlayPage() {
   const { slug } = useParams();
-  const [screen, setScreen] = useState("name"); // name | cover | play | rewards
+  const [screen, setScreen] = useState("welcome"); // welcome | play | rewards | schedule | confirmed
   const { token, current, loading, error, start, answer, skip, answerPhoto } = usePlaySession(slug);
-  const [patches, setPatches] = useState([]);
   const [rewards, setRewards] = useState(null);
   const [selected, setSelected] = useState(null); // { kind: "option" | "custom", id }
   const [experienceInfo, setExperienceInfo] = useState(null);
@@ -30,6 +38,8 @@ export default function PlayPage() {
   const [scheduleTime, setScheduleTime] = useState("");
   const [confirmedInfo, setConfirmedInfo] = useState(null);
   const [rewardsError, setRewardsError] = useState(null);
+  const [showRewardError, setShowRewardError] = useState(false);
+  const [playerName, setPlayerName] = useState("");
 
   useEffect(() => {
     api
@@ -39,18 +49,12 @@ export default function PlayPage() {
   }, [slug]);
 
   const handleNameSubmit = async (name) => {
+    setPlayerName(name);
     await start(name);
-    setScreen("cover");
+    setScreen("play");
   };
 
-  if (infoError) return <p className="text-gem p-8">Error: {infoError}</p>;
-  if (error) return <p className="text-gem p-8">Error: {error}</p>;
-
   const handleAnswer = async (text) => {
-    setPatches((prev) => [
-      ...prev,
-      { tag: "respuesta", response: text, rotation: Math.random() * 8 - 4 },
-    ]);
     await answer(current.question_id, text);
   };
 
@@ -60,10 +64,6 @@ export default function PlayPage() {
 
   const handlePhotoAnswer = async (file) => {
     await answerPhoto(current.question_id, file);
-    setPatches((prev) => [
-      ...prev,
-      { tag: "foto", response: "📷", rotation: Math.random() * 8 - 4 },
-    ]);
   };
 
   const fetchRewards = async () => {
@@ -102,8 +102,12 @@ export default function PlayPage() {
   };
 
   const handleConfirmClick = () => {
+    if (!selected) {
+      setShowRewardError(true);
+      return;
+    }
     const meta = getSelectedReward();
-    if (selected?.kind === "option" && meta?.requires_datetime) {
+    if (selected.kind === "option" && meta?.requires_datetime) {
       setScreen("schedule");
       return;
     }
@@ -131,47 +135,47 @@ export default function PlayPage() {
     }
   };
 
-  const themeColor = experienceInfo?.theme_color;
-  const themeStyle = themeColor
-    ? { "--color-gem": themeColor, "--color-gem-dark": darkenHex(themeColor, 0.22) }
-    : undefined;
+  const restart = () => {
+    setScreen("welcome");
+    setRewards(null);
+    setSelected(null);
+    setShowBuildForm(false);
+    setBuildForm({ label: "", description: "", icon: "🎁" });
+    setBuildError(null);
+    setScheduleDate("");
+    setScheduleTime("");
+    setConfirmedInfo(null);
+    setRewardsError(null);
+    setShowRewardError(false);
+  };
+
+  const gem = experienceInfo?.theme_color || "#ff2d4f";
+  const themeStyle = {
+    "--color-gem": gem,
+    "--color-gem-light": lightenHex(gem, 0.64),
+    "--color-gem-dark": darkenHex(gem, 0.22),
+  };
+
+  if (infoError) return <p style={{ color: "#ff2d4f", padding: 32 }}>Error: {infoError}</p>;
+  if (error) return <p style={{ color: "#ff2d4f", padding: 32 }}>Error: {error}</p>;
 
   return (
-    <div
-      className="min-h-screen text-parchment p-6 flex justify-center items-center font-sans"
-      style={themeStyle}
-    >
-      <div className="w-full max-w-md">
-        {screen === "name" && <NameGate onSubmit={handleNameSubmit} />}
+    <div style={{ minHeight: "100vh", background: "#0a0a0d", color: "#e9e9ed", fontFamily: "Inter,system-ui,sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 20px", ...themeStyle }}>
+      <Logo style={{ position: "fixed", top: 24, left: 28 }} />
+      <div style={{ width: "100%", maxWidth: 440, background: "rgba(255,255,255,0.045)", backdropFilter: "blur(14px)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, boxShadow: "0 24px 60px rgba(0,0,0,0.5)", padding: 32 }}>
+        {screen === "welcome" && <WelcomeScreen experienceInfo={experienceInfo} onSubmit={handleNameSubmit} />}
 
-        {loading && screen !== "name" && <p>Cargando...</p>}
+        {loading && screen !== "welcome" && <p style={{ fontSize: 14, color: "rgba(233,233,237,0.6)" }}>Cargando...</p>}
 
-        {screen === "cover" && !loading && (
-          <CoverScreen onStart={() => setScreen("play")} />
-        )}
-
-        {screen === "play" && current && (
+        {screen === "play" && current && !loading && (
           <>
-            <div className="flex items-center justify-between mb-4">
-              <span className="font-mono text-mustard text-sm font-bold">
-                ★ {current.total_points ?? 0} pts
-              </span>
-              <ProgressDots
-                totalPoints={current.total_points ?? 0}
-                pointsPerQuestion={POINTS_PER_QUESTION}
-                neededPoints={current.reward_threshold ?? DEFAULT_NEEDED_POINTS}
-              />
-            </div>
-
-            <div className="bg-plum rounded-2xl p-3.5 min-h-[92px] flex flex-wrap gap-2 mb-4">
-              {patches.map((p, i) => (
-                <PatchCard key={i} {...p} />
-              ))}
-            </div>
-
             {current.module_type === "question" && (
               <QuestionCard
                 question={current}
+                points={current.total_points ?? 0}
+                neededPoints={current.reward_threshold ?? DEFAULT_NEEDED_POINTS}
+                rewardsUnlocked={Boolean(current.rewards_unlocked)}
+                onJumpToRewards={loadRewards}
                 onSubmit={handleAnswer}
                 onSkip={handleSkip}
                 onSubmitPhoto={handlePhotoAnswer}
@@ -179,21 +183,20 @@ export default function PlayPage() {
             )}
 
             {current.module_type === "done" && (
-              <div className="text-center screen-enter mb-4">
-                <p>¡Terminaste las preguntas!</p>
-              </div>
-            )}
-
-            {current.rewards_unlocked && (
-              <div className="text-center screen-enter mt-4">
-                <button
-                  onClick={loadRewards}
-                  className="btn-fill bg-gem px-6 py-3 rounded-xl font-semibold"
-                >
-                  Elegir mi cita »
-                </button>
-                {rewardsError && (
-                  <p className="text-gem text-sm mt-3">{rewardsError}</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16, textAlign: "center" }}>
+                <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 18 }}>¡Terminaste las preguntas!</div>
+                {current.rewards_unlocked ? (
+                  <>
+                    <p style={{ fontSize: 13, color: "rgba(233,233,237,0.65)", margin: 0 }}>
+                      Llevás {current.total_points ?? 0} pts. Ya podés elegir tu recompensa.
+                    </p>
+                    <PlayerButton label="Ver mis recompensas" onClick={loadRewards} />
+                    {rewardsError && <p style={{ color: "#ff2d4f", fontSize: 13 }}>{rewardsError}</p>}
+                  </>
+                ) : (
+                  <p style={{ fontSize: 13, color: "rgba(233,233,237,0.65)", margin: 0 }}>
+                    Todavía no llegaste al puntaje necesario para desbloquear una recompensa.
+                  </p>
                 )}
               </div>
             )}
@@ -201,21 +204,30 @@ export default function PlayPage() {
         )}
 
         {screen === "rewards" && rewards && (
-          <div className="screen-enter">
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(233,233,237,0.5)" }}>
+              Llevás {current?.total_points ?? 0} pts
+            </div>
+            <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 20 }}>Elegí tu recompensa</div>
+
             {rewards.options.length === 0 &&
               rewards.custom.created.length === 0 &&
               !(rewards.custom.enabled && rewards.custom.remaining > 0) && (
-                <p className="text-parchment-dim text-sm mb-4">
+                <p style={{ fontSize: 13, color: "rgba(233,233,237,0.6)" }}>
                   Todavía no hay recompensas cargadas para esta experiencia.
                 </p>
               )}
-            <div className="grid grid-cols-2 gap-2.5">
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               {rewards.options.map((r) => (
                 <RewardCard
                   key={`option-${r.id}`}
                   reward={r}
                   isSelected={selected?.kind === "option" && selected?.id === r.id}
-                  onSelect={() => setSelected({ kind: "option", id: r.id })}
+                  onSelect={() => {
+                    setSelected({ kind: "option", id: r.id });
+                    setShowRewardError(false);
+                  }}
                 />
               ))}
               {rewards.custom.created.map((r) => (
@@ -223,121 +235,65 @@ export default function PlayPage() {
                   key={`custom-${r.id}`}
                   reward={r}
                   isSelected={selected?.kind === "custom" && selected?.id === r.id}
-                  onSelect={() => setSelected({ kind: "custom", id: r.id })}
+                  onSelect={() => {
+                    setSelected({ kind: "custom", id: r.id });
+                    setShowRewardError(false);
+                  }}
                 />
               ))}
               {rewards.custom.enabled && rewards.custom.remaining > 0 && (
-                <BuildRewardCard
-                  remaining={rewards.custom.remaining}
-                  onOpen={() => setShowBuildForm(true)}
-                />
+                <BuildRewardCard active={showBuildForm} onOpen={() => setShowBuildForm(true)} />
               )}
             </div>
 
-            <button
-              onClick={handleConfirmClick}
-              disabled={!selected}
-              className="btn-fill w-full mt-4 bg-gem px-6 py-3 rounded-xl font-semibold disabled:opacity-40 disabled:pointer-events-none"
-            >
-              Confirmar recompensa »
-            </button>
-
             {showBuildForm && (
-              <div className="mt-4 bg-void-2 border border-white/15 rounded-2xl p-4">
-                <h3 className="font-display text-sm mb-3">Armá tu recompensa</h3>
-                {buildError && <p className="text-gem text-xs mb-2">{buildError}</p>}
-                <div className="flex gap-2 mb-2">
-                  <input
-                    value={buildForm.icon}
-                    onChange={(e) => setBuildForm({ ...buildForm, icon: e.target.value })}
-                    placeholder="🎁"
-                    className="w-14 rounded-lg border border-white/20 bg-void p-2 text-sm text-center"
-                  />
-                  <input
-                    value={buildForm.label}
-                    onChange={(e) => setBuildForm({ ...buildForm, label: e.target.value })}
-                    placeholder="Nombre de tu recompensa"
-                    className="flex-1 rounded-lg border border-white/20 bg-void p-2 text-sm"
-                  />
-                </div>
-                <textarea
-                  value={buildForm.description}
-                  onChange={(e) => setBuildForm({ ...buildForm, description: e.target.value })}
-                  placeholder="Describila un poco (opcional)"
-                  rows={2}
-                  className="w-full rounded-lg border border-white/20 bg-void p-2 text-sm resize-none mb-3"
-                />
-                <div className="flex gap-2">
-                  <button
-                    onClick={submitCustomReward}
-                    className="btn-fill bg-gem px-4 py-2 rounded-lg text-sm font-semibold"
-                  >
-                    Crear
-                  </button>
-                  <button
-                    onClick={() => setShowBuildForm(false)}
-                    className="btn-text text-parchment-dim text-xs underline"
-                  >
-                    cancelar
-                  </button>
-                </div>
-              </div>
+              <input
+                type="text"
+                value={buildForm.label}
+                onChange={(e) => setBuildForm({ ...buildForm, label: e.target.value })}
+                placeholder="Ej: un picnic el sábado"
+                style={inputStyle}
+              />
             )}
+
+            {showRewardError && <div style={{ fontSize: 12, color: "#ff2d4f" }}>Elegí una recompensa para continuar.</div>}
+
+            <div>
+              <PlayerButton label="Continuar" onClick={showBuildForm ? submitCustomReward : handleConfirmClick} />
+            </div>
+            {buildError && <p style={{ color: "#ff2d4f", fontSize: 12 }}>{buildError}</p>}
+            {rewardsError && <p style={{ color: "#ff2d4f", fontSize: 13 }}>{rewardsError}</p>}
           </div>
         )}
 
         {screen === "schedule" && (
-          <div className="screen-enter bg-void-2 border border-white/10 rounded-2xl p-6">
-            <h2 className="font-display text-xl mb-1">Elegí fecha y hora</h2>
-            <p className="text-parchment-dim text-sm mb-4">
-              Para "{getSelectedReward()?.label}"
-            </p>
-            <label className="block text-xs text-parchment-dim mb-1">Fecha</label>
-            <input
-              type="date"
-              value={scheduleDate}
-              onChange={(e) => setScheduleDate(e.target.value)}
-              className="w-full rounded-lg border border-white/20 bg-void p-3 text-sm mb-3"
-            />
-            <label className="block text-xs text-parchment-dim mb-1">Hora</label>
-            <input
-              type="time"
-              value={scheduleTime}
-              onChange={(e) => setScheduleTime(e.target.value)}
-              className="w-full rounded-lg border border-white/20 bg-void p-3 text-sm mb-5"
-            />
-            <div className="flex gap-2">
-              <button
-                onClick={handleConfirmSchedule}
-                disabled={!scheduleDate || !scheduleTime}
-                className="btn-fill flex-1 bg-gem px-5 py-3 rounded-xl font-semibold text-sm disabled:opacity-40 disabled:pointer-events-none"
-              >
-                Confirmar »
-              </button>
-              <button
-                onClick={() => setScreen("rewards")}
-                className="btn-text text-parchment-dim text-sm"
-              >
-                volver
-              </button>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 20 }}>¿Cuándo?</div>
+            <p style={{ fontSize: 13, color: "rgba(233,233,237,0.65)", margin: 0 }}>Elegí fecha y hora para tu recompensa.</p>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input type="date" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+              <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+            </div>
+            <div>
+              <PlayerButton label="Confirmar" onClick={handleConfirmSchedule} disabled={!scheduleDate || !scheduleTime} />
             </div>
           </div>
         )}
 
         {screen === "confirmed" && confirmedInfo && (
-          <div className="screen-enter bg-void-2 border border-white/10 rounded-2xl p-8 text-center">
-            <span className="text-4xl block mb-3">🎉</span>
-            <h2 className="font-display text-xl mb-2">¡Confirmado!</h2>
-            <p className="text-parchment-dim text-sm">
-              Elegiste <span className="text-parchment font-semibold">{confirmedInfo.reward}</span>
-              {confirmedInfo.date && confirmedInfo.time && (
-                <>
-                  {" "}para el <span className="text-mustard">{confirmedInfo.date}</span> a las{" "}
-                  <span className="text-mustard">{confirmedInfo.time}</span>
-                </>
-              )}
-              .
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 14 }}>
+            <i className="fa-solid fa-circle-check" style={{ fontSize: 40, color: "var(--color-gem)" }} />
+            <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 20 }}>¡Gracias, {playerName}!</div>
+            <p style={{ fontSize: 13, color: "rgba(233,233,237,0.65)", margin: 0, maxWidth: "28ch" }}>
+              Tu regalo fue elegido y enviado a quien armó esta encuesta.
             </p>
+            <div style={{ fontSize: 12, background: "rgba(255,255,255,0.05)", borderRadius: 8, padding: "10px 16px" }}>
+              {confirmedInfo.reward}
+              {confirmedInfo.date && confirmedInfo.time ? ` · ${confirmedInfo.date} ${confirmedInfo.time}` : ""} · {current?.total_points ?? 0} pts
+            </div>
+            <div style={{ width: "100%", marginTop: 6 }}>
+              <PlayerButton label="Volver a jugar" onClick={restart} />
+            </div>
           </div>
         )}
       </div>

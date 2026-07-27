@@ -1,12 +1,24 @@
-export default function BuildRewardCard({ remaining, onOpen }) {
+export default function BuildRewardCard({ active, onOpen }) {
   return (
-    <button
+    <div
       onClick={onOpen}
-      className="tile-interactive h-32 rounded-2xl border-2 border-dashed border-white/25 flex flex-col items-center justify-center gap-1 text-center p-3 text-parchment-dim hover:border-gem hover:text-parchment transition-colors"
+      style={{
+        height: 140,
+        borderRadius: 14,
+        border: active ? "1.5px dashed var(--color-gem)" : "1.5px dashed rgba(255,255,255,0.2)",
+        background: active ? "color-mix(in srgb, var(--color-gem) 8%, transparent)" : "transparent",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        cursor: "pointer",
+      }}
     >
-      <span className="text-2xl">✨</span>
-      <span className="font-display text-sm uppercase">Crear la mía</span>
-      <span className="text-[10px]">quedan {remaining}</span>
-    </button>
+      <div style={{ fontSize: 22 }}>✨</div>
+      <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 13, color: active ? "var(--color-gem-light)" : "#e9e9ed" }}>
+        Creá la tuya
+      </div>
+    </div>
   );
 }

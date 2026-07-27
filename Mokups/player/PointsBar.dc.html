@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="display:flex;align-items:center;gap:10px;">
+  <sc-if value="{{ isRojo }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,0.12);overflow:hidden;"><div style="width:{{ percent }}%;height:100%;background:#ff2d4f;"></div></div>
+    <div style="font-size:11px;font-weight:600;color:#ffb3c0;white-space:nowrap;">{{ points }} pts</div>
+  </sc-if>
+  <sc-if value="{{ isVerde }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,0.12);overflow:hidden;"><div style="width:{{ percent }}%;height:100%;background:#2ecc71;"></div></div>
+    <div style="font-size:11px;font-weight:600;color:#a8f0c6;white-space:nowrap;">{{ points }} pts</div>
+  </sc-if>
+  <sc-if value="{{ isAzul }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,0.12);overflow:hidden;"><div style="width:{{ percent }}%;height:100%;background:#4f9dff;"></div></div>
+    <div style="font-size:11px;font-weight:600;color:#b8dcff;white-space:nowrap;">{{ points }} pts</div>
+  </sc-if>
+  <sc-if value="{{ isDorado }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,0.12);overflow:hidden;"><div style="width:{{ percent }}%;height:100%;background:#e8b13a;"></div></div>
+    <div style="font-size:11px;font-weight:600;color:#ffe3a8;white-space:nowrap;">{{ points }} pts</div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:260,&quot;height&quot;:24},&quot;percent&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:40,&quot;min&quot;:0,&quot;max&quot;:100,&quot;tsType&quot;:&quot;number&quot;},&quot;points&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:18,&quot;tsType&quot;:&quot;number&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;rojo&quot;,&quot;options&quot;:[&quot;rojo&quot;,&quot;verde&quot;,&quot;azul&quot;,&quot;dorado&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const theme = this.props.theme ?? "rojo";
+    return {
+      percent: this.props.percent ?? 0,
+      points: this.props.points ?? 0,
+      isRojo: theme === "rojo",
+      isVerde: theme === "verde",
+      isAzul: theme === "azul",
+      isDorado: theme === "dorado"
+    };
+  }
+}
+
+</script>
+</body>
+</html>

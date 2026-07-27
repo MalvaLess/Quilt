@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
+  <style>
+    body { margin: 0; background: #100d10; }
+    ::selection { background: rgba(255,45,79,0.32); }
+    a { color: #ff2d4f; text-decoration: none; }
+    a:hover { color: #ff7d93; }
+    *,*::before,*::after { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="background:#050505;color:#e9e9ed;font-family:Inter,system-ui,sans-serif;font-weight:400;min-height:100vh;position:relative;">
+
+  <div style="position:relative;z-index:1;">
+
+  <div style="position:relative;">
+
+  <div style="position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(135deg, rgba(122,21,38,0.2) 0%, rgba(60,10,19,0.12) 25%, #000000 50%, rgba(120,60,70,0.06) 75%, rgba(255,125,147,0.1) 100%);"></div>
+
+  <div style="position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0.035;mix-blend-mode:overlay;background-image:url('data:image/svg+xml;utf8,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22&gt;&lt;filter id=%22n%22&gt;&lt;feTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/&gt;&lt;/filter&gt;&lt;rect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22/&gt;&lt;/svg&gt;');"></div>
+
+  <div style="position:relative;z-index:1;">
+
+  <!-- NAV -->
+  <div id="top" style="position:fixed;top:12px;left:50%;transform:translateX(-50%);width:90%;max-width:1600px;z-index:50;transition:all 0.3s ease;will-change:transform;display:flex;align-items:center;gap:28px;padding:10px 24px;border-radius:16px;background:rgba(23,18,20,0.75);backdrop-filter:blur(12px);border:1px solid rgba(233,233,237,0.08);">
+    <div style="display:flex;align-items:center;gap:10px;margin-right:auto;">
+      <img src="assets/quilt-logo-mark.png" alt="Quilt" style="width:26px;height:26px;border-radius:7px;display:block;">
+      <div style="font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:17px;letter-spacing:-0.01em;">Quilt</div>
+    </div>
+
+    <div style="position:relative;padding-bottom:16px;margin-bottom:-16px;" onmouseenter="{{ openProducto }}" onmouseleave="{{ closeMenu }}">
+      <div style="display:flex;align-items:center;gap:5px;font-size:14px;color:#e9e9ed;cursor:pointer;padding:6px 2px;"><i class="fa-solid fa-wand-magic-sparkles" style="font-size:12px;color:rgba(233,233,237,0.6);"></i> Funciones <i class="fa-solid fa-chevron-down" style="font-size:9px;color:rgba(233,233,237,0.5);"></i></div>
+      <sc-if value="{{ menuProductoOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:44px;left:0;width:260px;background:#130f11;border:1px solid rgba(233,233,237,0.1);border-radius:12px;padding:8px;box-shadow:0 16px 40px rgba(0,0,0,0.5);display:flex;flex-direction:column;gap:2px;">
+          <a href="#como-funciona" style="display:flex;gap:12px;padding:10px;border-radius:8px;" style-hover="background:rgba(233,233,237,0.09);">
+            <i class="fa-solid fa-diagram-project" style="font-size:15px;color:rgba(233,233,237,0.6);margin-top:2px;"></i>
+            <div><div style="font-size:13px;font-weight:600;color:#e9e9ed;">Cómo funciona</div><div style="font-size:11px;color:rgba(233,233,237,0.55);margin-top:2px;">Tres pasos para armar tu experiencia.</div></div>
+          </a>
+          <a href="#modulos" style="display:flex;gap:12px;padding:10px;border-radius:8px;" style-hover="background:rgba(233,233,237,0.09);">
+            <i class="fa-solid fa-shapes" style="font-size:15px;color:rgba(233,233,237,0.6);margin-top:2px;"></i>
+            <div><div style="font-size:13px;font-weight:600;color:#e9e9ed;">Módulos</div><div style="font-size:11px;color:rgba(233,233,237,0.55);margin-top:2px;">Preguntas, texto libre y subida de fotos.</div></div>
+          </a>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="position:relative;padding-bottom:16px;margin-bottom:-16px;" onmouseenter="{{ openRecursos }}" onmouseleave="{{ closeMenu }}">
+      <div style="display:flex;align-items:center;gap:5px;font-size:14px;color:#e9e9ed;cursor:pointer;padding:6px 2px;"><i class="fa-solid fa-book-open" style="font-size:12px;color:rgba(233,233,237,0.6);"></i> Recursos <i class="fa-solid fa-chevron-down" style="font-size:9px;color:rgba(233,233,237,0.5);"></i></div>
+      <sc-if value="{{ menuRecursosOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:44px;left:0;width:260px;background:#130f11;border:1px solid rgba(233,233,237,0.1);border-radius:12px;padding:8px;box-shadow:0 16px 40px rgba(0,0,0,0.5);display:flex;flex-direction:column;gap:2px;">
+          <a href="#casos" style="display:flex;gap:12px;padding:10px;border-radius:8px;" style-hover="background:rgba(233,233,237,0.09);">
+            <i class="fa-solid fa-lightbulb" style="font-size:15px;color:rgba(233,233,237,0.6);margin-top:2px;"></i>
+            <div><div style="font-size:13px;font-weight:600;color:#e9e9ed;">Casos de uso</div><div style="font-size:11px;color:rgba(233,233,237,0.55);margin-top:2px;">Citas, equipos y encuestas rápidas.</div></div>
+          </a>
+          <a href="#jugador" style="display:flex;gap:12px;padding:10px;border-radius:8px;" style-hover="background:rgba(233,233,237,0.09);">
+            <i class="fa-solid fa-gamepad" style="font-size:15px;color:rgba(233,233,237,0.6);margin-top:2px;"></i>
+            <div><div style="font-size:13px;font-weight:600;color:#e9e9ed;">Soy jugador</div><div style="font-size:11px;color:rgba(233,233,237,0.55);margin-top:2px;">Entrá con un código, sin cuenta.</div></div>
+          </a>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center;">
+      <a href="#" style="display:inline-flex;align-items:center;gap:6px;font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:13px;color:#e9e9ed;border:1px solid rgba(233,233,237,0.18);border-radius:7px;padding:7px 12px;transition:transform 0.2s ease, background 0.2s ease;" style-hover="background:rgba(233,233,237,0.09);transform:scale(1.05);">Iniciar sesión</a>
+      <a href="#" style="display:inline-flex;align-items:center;gap:6px;font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:13px;color:#ffb3c0;background:rgba(255,45,79,0.16);border:1.5px solid #ff2d4f;border-radius:7px;padding:7px 13px;box-shadow:0 0 16px rgba(255,45,79,0.3);transition:transform 0.2s ease, background 0.2s ease;" style-hover="background:rgba(255,45,79,0.3);transform:scale(1.07);">Crear cuenta</a>
+    </div>
+    <div style="position:relative;">
+      <div onclick="{{ toggleLangMenu }}" style="height:34px;padding:0 10px;border-radius:8px;border:1px solid rgba(233,233,237,0.16);display:flex;align-items:center;gap:6px;cursor:pointer;font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:13px;" style-hover="background:rgba(233,233,237,0.07);">
+        <span>{{ currentLang }}</span>
+        <i class="fa-solid fa-chevron-down" style="font-size:9px;color:rgba(233,233,237,0.55);"></i>
+      </div>
+      <sc-if value="{{ langMenuOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:42px;right:0;background:#171217;border:1px solid rgba(233,233,237,0.12);border-radius:10px;padding:6px;display:flex;flex-direction:column;gap:2px;min-width:88px;box-shadow:0 12px 32px rgba(0,0,0,0.5);">
+          <sc-if value="{{ isEs }}" hint-placeholder-val="{{ true }}">
+            <div onclick="{{ setLangEs }}" style="padding:7px 10px;border-radius:6px;font-size:13px;cursor:pointer;background:rgba(255,45,79,0.16);color:#ffb3c0;">ES · Español</div>
+          </sc-if>
+          <sc-if value="{{ isNotEs }}" hint-placeholder-val="{{ true }}">
+            <div onclick="{{ setLangEs }}" style="padding:7px 10px;border-radius:6px;font-size:13px;cursor:pointer;color:#e9e9ed;">ES · Español</div>
+          </sc-if>
+          <sc-if value="{{ isEn }}" hint-placeholder-val="{{ true }}">
+            <div onclick="{{ setLangEn }}" style="padding:7px 10px;border-radius:6px;font-size:13px;cursor:pointer;background:rgba(255,45,79,0.16);color:#ffb3c0;">EN · English</div>
+          </sc-if>
+          <sc-if value="{{ isNotEn }}" hint-placeholder-val="{{ true }}">
+            <div onclick="{{ setLangEn }}" style="padding:7px 10px;border-radius:6px;font-size:13px;cursor:pointer;color:#e9e9ed;">EN · English</div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div style="max-width:1280px;margin:0 auto;padding:112px 56px 88px;display:grid;grid-template-columns:1.05fr 0.95fr;gap:64px;align-items:center;">
+    <div>
+      <div style="display:inline-flex;align-items:center;gap:10px;font-size:12px;padding:6px 16px 6px 10px;border-radius:20px;border:1px solid rgba(255,45,79,0.35);background:rgba(255,255,255,0.04);backdrop-filter:blur(10px);color:#ffb3c0;margin-bottom:22px;">
+        <i class="fa-solid fa-wand-magic-sparkles" style="font-size:11px;color:#ff2d4f;"></i>
+        <span style="font-weight:600;color:#ffb3c0;">Constructor de experiencias interactivas</span>
+        <span style="width:1px;height:14px;background:rgba(233,233,237,0.2);"></span>
+        <span style="color:rgba(233,233,237,0.6);">Preguntas, minijuegos y recompensas</span>
+        <i class="fa-solid fa-arrow-right" style="font-size:10px;color:rgba(233,233,237,0.5);"></i>
+      </div>
+      <h1 style="font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:58px;line-height:1.05;letter-spacing:-0.02em;margin:0 0 18px;max-width:10.5ch;">Armá una experiencia, <span style="color:#ff2d4f;text-shadow:0 0 30px rgba(255,45,79,0.5);">pieza por pieza.</span></h1>
+      <p style="font-size:16px;line-height:1.6;opacity:0.8;margin:0 0 32px;max-width:46ch;">{{ heroSubcopy }}</p>
+      <div style="display:flex;gap:12px;">
+        <a href="#" style="display:inline-flex;align-items:center;gap:6px;font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:15px;color:#ffb3c0;background:rgba(255,45,79,0.16);border:1.5px solid #ff2d4f;border-radius:8px;padding:12px 24px;box-shadow:0 0 28px rgba(255,45,79,0.3);transition:transform 0.2s ease, background 0.2s ease;" style-hover="background:rgba(255,45,79,0.3);transform:scale(1.06);">Crear cuenta gratis</a>
+        <a href="#como-funciona" style="display:inline-flex;align-items:center;gap:6px;font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:15px;color:#e9e9ed;border:1px solid rgba(233,233,237,0.16);border-radius:8px;padding:12px 24px;transition:transform 0.2s ease, background 0.2s ease;" style-hover="background:rgba(233,233,237,0.07);transform:scale(1.05);">Ver cómo funciona</a>
+      </div>
+    </div>
+
+    <!-- phone mockup: question + points -->
+    <div style="display:flex;justify-content:center;">
+      <div style="width:280px;border-radius:32px;background:#171217;box-shadow:0 0 0 1px rgba(233,233,237,0.09), 0 0 60px rgba(255,45,79,0.22), 0 6px 18px rgba(0,0,0,0.55);padding:20px 18px 28px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:22px;">
+          <div style="flex:1;height:6px;border-radius:3px;background:rgba(233,233,237,0.14);overflow:hidden;">
+            <div style="width:64%;height:100%;background:#ff2d4f;"></div>
+          </div>
+          <div style="font-size:11px;color:#ffb3c0;font-family:Inter,system-ui,sans-serif;font-weight:500;">32 pts</div>
+        </div>
+        <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(233,233,237,0.55);margin-bottom:8px;">Pregunta 3 de 7</div>
+        <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:19px;line-height:1.25;margin-bottom:22px;">¿Playa o montaña para el próximo finde?</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="border:1px solid #ff2d4f;box-shadow:inset 0 0 0 0 transparent;border-radius:8px;padding:12px 14px;font-size:14px;color:#ffb3c0;">Playa, sin dudarlo</div>
+          <div style="border:1px solid rgba(233,233,237,0.16);border-radius:8px;padding:12px 14px;font-size:14px;">Montaña, prefiero el fresco</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUILT WITH -->
+  <div style="max-width:1280px;margin:0 auto;padding:0 56px 64px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+    <div style="font-size:13px;color:rgba(233,233,237,0.55);">Construido con</div>
+    <div style="display:flex;gap:26px;flex-wrap:wrap;justify-content:center;align-items:center;">
+      <i class="devicon-python-plain" title="Python" style="font-size:24px;color:rgba(233,233,237,0.82);"></i>
+      <i class="devicon-fastapi-plain" title="FastAPI" style="font-size:24px;color:rgba(233,233,237,0.82);"></i>
+      <i class="devicon-postgresql-plain" title="PostgreSQL" style="font-size:24px;color:rgba(233,233,237,0.82);"></i>
+      <i class="fa-solid fa-layer-group" title="SQLAlchemy" style="font-size:21px;color:rgba(233,233,237,0.82);"></i>
+      <i class="fa-solid fa-code-branch" title="Alembic" style="font-size:21px;color:rgba(233,233,237,0.82);"></i>
+      <i class="fa-solid fa-shield-halved" title="Pydantic" style="font-size:21px;color:rgba(233,233,237,0.82);"></i>
+      <i class="devicon-react-plain" title="React" style="font-size:25px;color:rgba(233,233,237,0.82);"></i>
+      <i class="devicon-vitejs-plain" title="Vite" style="font-size:24px;color:rgba(233,233,237,0.82);"></i>
+      <i class="devicon-tailwindcss-plain" title="Tailwind CSS" style="font-size:24px;color:rgba(233,233,237,0.82);"></i>
+      <i class="devicon-javascript-plain" title="JavaScript" style="font-size:23px;color:rgba(233,233,237,0.82);"></i>
+      <i class="devicon-html5-plain" title="HTML5" style="font-size:23px;color:rgba(233,233,237,0.82);"></i>
+      <i class="devicon-css3-plain" title="CSS" style="font-size:23px;color:rgba(233,233,237,0.82);"></i>
+      <i class="devicon-docker-plain" title="Docker" style="font-size:24px;color:rgba(233,233,237,0.82);"></i>
+    </div>
+  </div>
+
+  <!-- PLAYER CODE ENTRY -->
+  <div id="jugador" style="max-width:1280px;margin:0 auto;padding:0 56px 64px;">
+    <div style="border-radius:14px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);padding:32px;display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#ff2d4f;margin-bottom:6px;">¿Sos jugador?</div>
+        <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:20px;margin-bottom:6px;">Entrá con el código que te compartieron.</div>
+        <p style="font-size:13px;opacity:0.7;margin:0;">No necesitás cuenta. Solo el código o el link de la experiencia.</p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <input type="text" placeholder="CÓDIGO-1234" style="width:180px;height:44px;padding:0 14px;border-radius:8px;background:#171217;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;font-family:Inter,system-ui,sans-serif;letter-spacing:0.05em;">
+        <a href="#" style="display:inline-flex;align-items:center;gap:6px;font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:14px;color:#ffb3c0;background:rgba(255,45,79,0.16);border:1.5px solid #ff2d4f;border-radius:8px;padding:12px 22px;box-shadow:0 0 20px rgba(255,45,79,0.3);transition:transform 0.2s ease, background 0.2s ease;" style-hover="background:rgba(255,45,79,0.3);transform:scale(1.07);">Jugar ahora</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMO FUNCIONA -->
+  <div id="como-funciona" style="max-width:1280px;margin:0 auto;padding:64px 56px;">
+    <h6 style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#ff2d4f;margin:0 0 8px;">Cómo funciona</h6>
+    <h2 style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:32px;margin:0 0 40px;max-width:20ch;">Tres pasos, ningún registro.</h2>
+    <div style="position:relative;height:210px;">
+      <sc-if value="{{ isComoCenter0 }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;top:0;left:34%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(14px);border:1px solid #ff2d4f;box-shadow:0 0 32px rgba(255,45,79,0.25);transform:scale(1.05);z-index:3;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.22);border:1px solid rgba(255,45,79,0.4);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-layer-group" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Diseñá tus módulos</div>
+          <p style="font-size:13px;opacity:0.75;margin:0;">Elegís entre preguntas de opción múltiple, respuesta libre o subida de foto, y le asignás puntos a cada una.</p>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isComoRight0 }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;left:68%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);transform:scale(0.9);opacity:0.55;z-index:1;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.14);border:1px solid rgba(255,45,79,0.25);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-layer-group" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Diseñá tus módulos</div>
+          <p style="font-size:13px;opacity:0.7;margin:0;">Elegís entre preguntas de opción múltiple, respuesta libre o subida de foto, y le asignás puntos a cada una.</p>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isComoLeft0 }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;left:0%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);transform:scale(0.9);opacity:0.55;z-index:1;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.14);border:1px solid rgba(255,45,79,0.25);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-layer-group" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Diseñá tus módulos</div>
+          <p style="font-size:13px;opacity:0.7;margin:0;">Elegís entre preguntas de opción múltiple, respuesta libre o subida de foto, y le asignás puntos a cada una.</p>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isComoCenter1 }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;left:34%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(14px);border:1px solid #ff2d4f;box-shadow:0 0 32px rgba(255,45,79,0.25);transform:scale(1.05);z-index:3;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.22);border:1px solid rgba(255,45,79,0.4);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-gift" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Definí las recompensas</div>
+          <p style="font-size:13px;opacity:0.75;margin:0;">Configurás qué se desbloquea según el puntaje acumulado, con fecha y hora si hace falta coordinar.</p>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isComoRight1 }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;top:0;left:68%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);transform:scale(0.9);opacity:0.55;z-index:1;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.14);border:1px solid rgba(255,45,79,0.25);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-gift" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Definí las recompensas</div>
+          <p style="font-size:13px;opacity:0.7;margin:0;">Configurás qué se desbloquea según el puntaje acumulado, con fecha y hora si hace falta coordinar.</p>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isComoLeft1 }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;left:0%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);transform:scale(0.9);opacity:0.55;z-index:1;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.14);border:1px solid rgba(255,45,79,0.25);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-gift" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Definí las recompensas</div>
+          <p style="font-size:13px;opacity:0.7;margin:0;">Configurás qué se desbloquea según el puntaje acumulado, con fecha y hora si hace falta coordinar.</p>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isComoCenter2 }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;left:34%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(14px);border:1px solid #ff2d4f;box-shadow:0 0 32px rgba(255,45,79,0.25);transform:scale(1.05);z-index:3;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.22);border:1px solid rgba(255,45,79,0.4);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-link" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Compartí el link</div>
+          <p style="font-size:13px;opacity:0.75;margin:0;">Cualquiera entra, juega y elige su recompensa al final. Sin cuenta, sin fricción.</p>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isComoRight2 }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;left:68%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);transform:scale(0.9);opacity:0.55;z-index:1;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.14);border:1px solid rgba(255,45,79,0.25);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-link" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Compartí el link</div>
+          <p style="font-size:13px;opacity:0.7;margin:0;">Cualquiera entra, juega y elige su recompensa al final. Sin cuenta, sin fricción.</p>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isComoLeft2 }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;top:0;left:0%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);transform:scale(0.9);opacity:0.55;z-index:1;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.14);border:1px solid rgba(255,45,79,0.25);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-link" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Compartí el link</div>
+          <p style="font-size:13px;opacity:0.7;margin:0;">Cualquiera entra, juega y elige su recompensa al final. Sin cuenta, sin fricción.</p>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <!-- MODULOS -->
+  <div id="modulos" style="max-width:1280px;margin:0 auto;padding:64px 56px;">
+    <h6 style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#ff2d4f;margin:0 0 8px;">Los módulos</h6>
+    <h2 style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:32px;margin:0 0 40px;max-width:24ch;">Cada dinámica se arma con las mismas piezas.</h2>
+    <div style="position:relative;height:250px;">
+      <sc-if value="{{ isModCenter0 }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;top:0;left:34%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(14px);border:1px solid #ff2d4f;box-shadow:0 0 32px rgba(255,45,79,0.25);transform:scale(1.05);z-index:3;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:14px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.22);border:1px solid rgba(255,45,79,0.4);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-list-check" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Opción múltiple</div>
+          <p style="font-size:13px;opacity:0.75;margin:0;flex:1;">Preguntas con respuestas predefinidas. Cada opción puede otorgar los mismos puntos, sin importar cuál se elija.</p>
+          <div style="display:inline-flex;align-self:flex-start;font-size:11px;padding:3px 10px;border-radius:6px;background:rgba(255,45,79,0.22);color:#fff0f2;">+10 pts</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isModRight0 }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;left:68%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);transform:scale(0.9);opacity:0.55;z-index:1;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:14px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.14);border:1px solid rgba(255,45,79,0.25);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-list-check" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Opción múltiple</div>
+          <p style="font-size:13px;opacity:0.7;margin:0;flex:1;">Preguntas con respuestas predefinidas. Cada opción puede otorgar los mismos puntos, sin importar cuál se elija.</p>
+          <div style="display:inline-flex;align-self:flex-start;font-size:11px;padding:3px 10px;border-radius:6px;background:#5c1424;color:#fff0f2;">+10 pts</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isModLeft0 }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;left:0%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);transform:scale(0.9);opacity:0.55;z-index:1;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:14px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.14);border:1px solid rgba(255,45,79,0.25);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-list-check" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Opción múltiple</div>
+          <p style="font-size:13px;opacity:0.7;margin:0;flex:1;">Preguntas con respuestas predefinidas. Cada opción puede otorgar los mismos puntos, sin importar cuál se elija.</p>
+          <div style="display:inline-flex;align-self:flex-start;font-size:11px;padding:3px 10px;border-radius:6px;background:#5c1424;color:#fff0f2;">+10 pts</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isModCenter1 }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;left:34%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(14px);border:1px solid #ff2d4f;box-shadow:0 0 32px rgba(255,45,79,0.25);transform:scale(1.05);z-index:3;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:14px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.22);border:1px solid rgba(255,45,79,0.4);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-align-left" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Respuesta de texto</div>
+          <p style="font-size:13px;opacity:0.75;margin:0;flex:1;">Espacio abierto para que el jugador escriba lo que quiera. Ideal para respuestas personales o creativas.</p>
+          <div style="display:inline-flex;align-self:flex-start;font-size:11px;padding:3px 10px;border-radius:6px;background:rgba(255,45,79,0.22);color:#fff0f2;">+15 pts</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isModRight1 }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;top:0;left:68%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);transform:scale(0.9);opacity:0.55;z-index:1;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:14px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.14);border:1px solid rgba(255,45,79,0.25);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-align-left" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Respuesta de texto</div>
+          <p style="font-size:13px;opacity:0.7;margin:0;flex:1;">Espacio abierto para que el jugador escriba lo que quiera. Ideal para respuestas personales o creativas.</p>
+          <div style="display:inline-flex;align-self:flex-start;font-size:11px;padding:3px 10px;border-radius:6px;background:#5c1424;color:#fff0f2;">+15 pts</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isModLeft1 }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;left:0%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);transform:scale(0.9);opacity:0.55;z-index:1;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:14px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.14);border:1px solid rgba(255,45,79,0.25);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-align-left" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Respuesta de texto</div>
+          <p style="font-size:13px;opacity:0.7;margin:0;flex:1;">Espacio abierto para que el jugador escriba lo que quiera. Ideal para respuestas personales o creativas.</p>
+          <div style="display:inline-flex;align-self:flex-start;font-size:11px;padding:3px 10px;border-radius:6px;background:#5c1424;color:#fff0f2;">+15 pts</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isModCenter2 }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;left:34%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(14px);border:1px solid #ff2d4f;box-shadow:0 0 32px rgba(255,45,79,0.25);transform:scale(1.05);z-index:3;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:14px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.22);border:1px solid rgba(255,45,79,0.4);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-camera" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Subir una foto</div>
+          <p style="font-size:13px;opacity:0.75;margin:0;flex:1;">El jugador sube una imagen desde su dispositivo — una foto de su mascota, de dónde está, de lo que sea.</p>
+          <div style="display:inline-flex;align-self:flex-start;font-size:11px;padding:3px 10px;border-radius:6px;background:rgba(255,45,79,0.22);color:#fff0f2;">+20 pts</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isModRight2 }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;left:68%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);transform:scale(0.9);opacity:0.55;z-index:1;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:14px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.14);border:1px solid rgba(255,45,79,0.25);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-camera" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Subir una foto</div>
+          <p style="font-size:13px;opacity:0.7;margin:0;flex:1;">El jugador sube una imagen desde su dispositivo — una foto de su mascota, de dónde está, de lo que sea.</p>
+          <div style="display:inline-flex;align-self:flex-start;font-size:11px;padding:3px 10px;border-radius:6px;background:#5c1424;color:#fff0f2;">+20 pts</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isModLeft2 }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;top:0;left:0%;width:31%;padding:24px;border-radius:12px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);transform:scale(0.9);opacity:0.55;z-index:1;transition:left 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s ease;display:flex;flex-direction:column;gap:14px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,45,79,0.14);border:1px solid rgba(255,45,79,0.25);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-camera" style="font-size:16px;color:#ff2d4f;"></i></div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:17px;">Subir una foto</div>
+          <p style="font-size:13px;opacity:0.7;margin:0;flex:1;">El jugador sube una imagen desde su dispositivo — una foto de su mascota, de dónde está, de lo que sea.</p>
+          <div style="display:inline-flex;align-self:flex-start;font-size:11px;padding:3px 10px;border-radius:6px;background:#5c1424;color:#fff0f2;">+20 pts</div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <!-- BUILDER MOCKUP -->
+  <div style="max-width:1280px;margin:0 auto;padding:64px 56px;">
+    <h6 style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#ff2d4f;margin:0 0 8px;">El armado</h6>
+    <h2 style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:32px;margin:0 0 12px;max-width:22ch;">Arrastrá, ordená, listo.</h2>
+    <p style="font-size:14px;opacity:0.8;margin:0 0 40px;max-width:52ch;">El creador arma la experiencia como una colcha: módulos en el orden que quiera, cada uno con sus puntos, y las recompensas que se desbloquean al final.</p>
+
+    <div style="border-radius:14px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);box-shadow:0 6px 18px rgba(0,0,0,0.55);overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:#1f151a;">
+        <div style="width:10px;height:10px;border-radius:50%;background:rgba(233,233,237,0.14);"></div>
+        <div style="width:10px;height:10px;border-radius:50%;background:rgba(233,233,237,0.14);"></div>
+        <div style="width:10px;height:10px;border-radius:50%;background:rgba(233,233,237,0.14);"></div>
+        <div style="font-size:12px;color:rgba(233,233,237,0.55);margin-left:12px;">quilt.app/e/cita-sorpresa — editor</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:0;">
+        <div style="padding:24px;border-right:1px solid rgba(233,233,237,0.16);">
+          <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(233,233,237,0.55);margin-bottom:14px;">Módulos — 4</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;background:#1f151a;">
+              <svg width="14" height="14" viewBox="0 0 24 24" stroke="rgba(233,233,237,0.4)" stroke-width="2" stroke-linecap="round" fill="none"><line x1="4" y1="8" x2="20" y2="8"></line><line x1="4" y1="16" x2="20" y2="16"></line></svg>
+              <div style="width:6px;height:6px;border-radius:50%;background:#ff7d93;"></div>
+              <div style="flex:1;font-size:14px;">¿Café o té?</div>
+              <div style="font-size:11px;color:rgba(233,233,237,0.55);">+10 pts</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;background:#1f151a;">
+              <svg width="14" height="14" viewBox="0 0 24 24" stroke="rgba(233,233,237,0.4)" stroke-width="2" stroke-linecap="round" fill="none"><line x1="4" y1="8" x2="20" y2="8"></line><line x1="4" y1="16" x2="20" y2="16"></line></svg>
+              <div style="width:6px;height:6px;border-radius:50%;background:#d81f3f;"></div>
+              <div style="flex:1;font-size:14px;">Contame tu mejor recuerdo juntos</div>
+              <div style="font-size:11px;color:rgba(233,233,237,0.55);">+15 pts</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;background:#1f151a;">
+              <svg width="14" height="14" viewBox="0 0 24 24" stroke="rgba(233,233,237,0.4)" stroke-width="2" stroke-linecap="round" fill="none"><line x1="4" y1="8" x2="20" y2="8"></line><line x1="4" y1="16" x2="20" y2="16"></line></svg>
+              <div style="width:6px;height:6px;border-radius:50%;background:#5c1424;"></div>
+              <div style="flex:1;font-size:14px;">Subí una foto de un lugar que te guste</div>
+              <div style="font-size:11px;color:rgba(233,233,237,0.55);">+20 pts</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;background:#1f151a;opacity:0.55;">
+              <svg width="14" height="14" viewBox="0 0 24 24" stroke="rgba(233,233,237,0.4)" stroke-width="2" stroke-linecap="round" fill="none"><line x1="4" y1="8" x2="20" y2="8"></line><line x1="4" y1="16" x2="20" y2="16"></line></svg>
+              <div style="width:6px;height:6px;border-radius:50%;background:#ff7d93;"></div>
+              <div style="flex:1;font-size:14px;">+ Agregar módulo</div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:24px;">
+          <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(233,233,237,0.55);margin-bottom:14px;">Recompensas</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:8px;border:1px solid rgba(233,233,237,0.16);">
+              <div>
+                <div style="font-size:14px;">Cena en casa, yo cocino</div>
+                <div style="font-size:11px;color:rgba(233,233,237,0.55);margin-top:2px;">Desde 20 pts</div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" stroke="#ff2d4f" stroke-width="1.6" fill="none"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:8px;border:1px solid #ff2d4f;">
+              <div>
+                <div style="font-size:14px;">Escapada de un día</div>
+                <div style="font-size:11px;color:#ffb3c0;margin-top:2px;">Desde 45 pts · con fecha</div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" stroke="#ff2d4f" stroke-width="1.6" fill="none"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>
+            </div>
+          </div>
+          <a href="#" style="display:inline-flex;margin-top:20px;align-items:center;gap:6px;font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:13px;color:#ff2d4f;border:1px solid #ff2d4f;border-radius:8px;padding:9px 16px;">Ver vista previa</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div style="max-width:1280px;margin:0 auto;padding:64px 56px;">
+    <h6 style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#ff2d4f;margin:0 0 8px;">Tu cuenta</h6>
+    <h2 style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:32px;margin:0 0 12px;max-width:24ch;">Un dashboard para todas tus experiencias.</h2>
+    <p style="font-size:14px;opacity:0.8;margin:0 0 40px;max-width:52ch;">Creás tu cuenta una sola vez. Desde ahí armás, editás y compartís cada experiencia, y veés cómo respondió cada jugador. Quien juega nunca necesita registrarse.</p>
+
+    <div style="border-radius:14px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);box-shadow:0 6px 18px rgba(0,0,0,0.55);overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:#1f151a;">
+        <div style="width:10px;height:10px;border-radius:50%;background:rgba(233,233,237,0.14);"></div>
+        <div style="width:10px;height:10px;border-radius:50%;background:rgba(233,233,237,0.14);"></div>
+        <div style="width:10px;height:10px;border-radius:50%;background:rgba(233,233,237,0.14);"></div>
+        <div style="font-size:12px;color:rgba(233,233,237,0.55);margin-left:12px;">quilt.app/dashboard</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:0;">
+        <div style="padding:24px;border-right:1px solid rgba(233,233,237,0.16);">
+          <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(233,233,237,0.55);margin-bottom:14px;">Tus experiencias</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:8px;border:1px solid #ff2d4f;background:#1f151a;">
+              <div>
+                <div style="font-size:14px;">Cita sorpresa</div>
+                <div style="font-size:11px;color:rgba(233,233,237,0.55);margin-top:2px;">12 jugadas · activa</div>
+              </div>
+              <div style="width:6px;height:6px;border-radius:50%;background:#ff2d4f;box-shadow:0 0 8px #ff2d4f;"></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:8px;background:#1f151a;">
+              <div>
+                <div style="font-size:14px;">Trivia del equipo</div>
+                <div style="font-size:11px;color:rgba(233,233,237,0.55);margin-top:2px;">6 jugadas · activa</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:12px 14px;border-radius:8px;background:#1f151a;opacity:0.55;">
+              <div style="font-size:14px;">+ Nueva experiencia</div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:24px;">
+          <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(233,233,237,0.55);margin-bottom:14px;">Respuestas — Cita sorpresa</div>
+          <div style="display:flex;flex-direction:column;gap:0;">
+            <div style="display:flex;align-items:center;gap:14px;padding:10px 4px;border-bottom:1px solid rgba(233,233,237,0.1);">
+              <div style="width:28px;height:28px;border-radius:50%;background:rgba(255,45,79,0.18);display:flex;align-items:center;justify-content:center;font-size:11px;color:#ffb3c0;">MJ</div>
+              <div style="flex:1;font-size:13px;">María J.</div>
+              <div style="font-size:12px;color:rgba(233,233,237,0.55);">52 pts</div>
+              <div style="font-size:12px;color:#ffb3c0;">Escapada de un día</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:10px 4px;border-bottom:1px solid rgba(233,233,237,0.1);">
+              <div style="width:28px;height:28px;border-radius:50%;background:rgba(79,180,255,0.18);display:flex;align-items:center;justify-content:center;font-size:11px;color:#a8d8ff;">LT</div>
+              <div style="flex:1;font-size:13px;">Lucas T.</div>
+              <div style="font-size:12px;color:rgba(233,233,237,0.55);">38 pts</div>
+              <div style="font-size:12px;color:#ffb3c0;">Cena en casa</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:10px 4px;">
+              <div style="width:28px;height:28px;border-radius:50%;background:rgba(255,190,60,0.18);display:flex;align-items:center;justify-content:center;font-size:11px;color:#ffe0a3;">SP</div>
+              <div style="flex:1;font-size:13px;">Sofía P.</div>
+              <div style="font-size:12px;color:rgba(233,233,237,0.55);">45 pts</div>
+              <div style="font-size:12px;color:#ffb3c0;">Escapada de un día</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAYER JOURNEY -->
+  <sc-if value="{{ showJourney }}" hint-placeholder-val="{{ true }}">
+    <div style="max-width:1280px;margin:0 auto;padding:64px 56px;">
+      <h6 style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#ff2d4f;margin:0 0 8px;">La experiencia</h6>
+      <h2 style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:32px;margin:0 0 40px;max-width:22ch;">Lo que ve quien juega, de punta a punta.</h2>
+      <div style="display:flex;gap:18px;flex-wrap:wrap;justify-content:center;">
+
+        <div style="width:220px;">
+          <div style="border-radius:24px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);padding:20px 16px;height:340px;display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center;gap:12px;">
+            <img src="assets/quilt-logo-mark.png" alt="Quilt" style="width:40px;height:40px;border-radius:10px;display:block;">
+            <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:16px;">¿Listo para jugar?</div>
+            <div style="font-size:12px;opacity:0.7;">Alguien armó esto para vos.</div>
+            <div style="margin-top:6px;font-size:13px;color:#ff2d4f;border:1px solid #ff2d4f;border-radius:8px;padding:8px 18px;">Empezar</div>
+          </div>
+          <div style="text-align:center;font-size:12px;opacity:0.6;margin-top:10px;">1. Bienvenida</div>
+        </div>
+
+        <div style="width:220px;">
+          <div style="border-radius:24px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);padding:20px 16px;height:340px;display:flex;flex-direction:column;gap:16px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="flex:1;height:5px;border-radius:3px;background:rgba(233,233,237,0.14);overflow:hidden;"><div style="width:40%;height:100%;background:#ff2d4f;"></div></div>
+              <div style="font-size:10px;color:#ffb3c0;">18 pts</div>
+            </div>
+            <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:15px;">¿Café o té?</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="font-size:12px;border:1px solid #ff2d4f;color:#ffb3c0;border-radius:7px;padding:9px 10px;">Café, sin dudarlo</div>
+              <div style="font-size:12px;border:1px solid rgba(233,233,237,0.16);border-radius:7px;padding:9px 10px;">Té, siempre</div>
+            </div>
+          </div>
+          <div style="text-align:center;font-size:12px;opacity:0.6;margin-top:10px;">2. Preguntas</div>
+        </div>
+
+        <div style="width:220px;">
+          <div style="border-radius:24px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);padding:20px 16px;height:340px;display:flex;flex-direction:column;gap:12px;">
+            <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:15px;">Elegí tu premio</div>
+            <div style="font-size:10px;opacity:0.6;">Llegaste a 45 pts</div>
+            <div style="border:1px solid #ff2d4f;border-radius:7px;padding:10px;font-size:12px;color:#ffb3c0;">Escapada de un día</div>
+            <div style="border:1px solid rgba(233,233,237,0.16);border-radius:7px;padding:10px;font-size:12px;">Cena en casa</div>
+            <div style="margin-top:auto;">
+              <div style="font-size:10px;opacity:0.6;margin-bottom:6px;">Fecha y hora</div>
+              <div style="display:flex;gap:6px;">
+                <div style="flex:1;font-size:11px;background:#1f151a;border-radius:6px;padding:7px;">Sáb 14</div>
+                <div style="flex:1;font-size:11px;background:#1f151a;border-radius:6px;padding:7px;">19:30</div>
+              </div>
+            </div>
+          </div>
+          <div style="text-align:center;font-size:12px;opacity:0.6;margin-top:10px;">3. Recompensa</div>
+        </div>
+
+        <div style="width:220px;">
+          <div style="border-radius:24px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);padding:20px 16px;height:340px;display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center;gap:12px;">
+            <svg width="34" height="34" viewBox="0 0 24 24" stroke="#ff2d4f" stroke-width="1.6" fill="none"><circle cx="12" cy="12" r="9"></circle><polyline points="8,12.5 11,15.5 16,9"></polyline></svg>
+            <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:16px;">¡Listo!</div>
+            <div style="font-size:12px;opacity:0.7;">Tu elección fue enviada a quien armó esto.</div>
+            <div style="font-size:11px;background:#1f151a;border-radius:7px;padding:8px 12px;margin-top:6px;">Escapada · Sáb 14, 19:30</div>
+          </div>
+          <div style="text-align:center;font-size:12px;opacity:0.6;margin-top:10px;">4. Confirmación</div>
+        </div>
+
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- CASOS DE USO -->
+  <div id="casos" style="max-width:1280px;margin:0 auto;padding:64px 56px;">
+    <h6 style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#ff2d4f;margin:0 0 8px;">Casos de uso</h6>
+    <h2 style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:32px;margin:0 0 32px;max-width:22ch;">Nació para una cita. Sirve para cualquier dinámica.</h2>
+
+    <div style="display:inline-flex;border:1px solid rgba(233,233,237,0.16);border-radius:8px;overflow:hidden;margin-bottom:28px;">
+      <sc-if value="{{ isCitas }}" hint-placeholder-val="{{ true }}">
+        <div onclick="{{ setTab_citas }}" style="padding:9px 18px;font-size:13px;cursor:pointer;background:#5c1424;color:#fff0f2;">Cita personalizada</div>
+      </sc-if>
+      <sc-if value="{{ isNotCitas }}" hint-placeholder-val="{{ true }}">
+        <div onclick="{{ setTab_citas }}" style="padding:9px 18px;font-size:13px;cursor:pointer;color:rgba(233,233,237,0.7);">Cita personalizada</div>
+      </sc-if>
+      <sc-if value="{{ isEquipo }}" hint-placeholder-val="{{ true }}">
+        <div onclick="{{ setTab_equipo }}" style="padding:9px 18px;font-size:13px;cursor:pointer;border-left:1px solid rgba(233,233,237,0.16);background:#5c1424;color:#fff0f2;">Dinámica de equipo</div>
+      </sc-if>
+      <sc-if value="{{ isNotEquipo }}" hint-placeholder-val="{{ true }}">
+        <div onclick="{{ setTab_equipo }}" style="padding:9px 18px;font-size:13px;cursor:pointer;border-left:1px solid rgba(233,233,237,0.16);color:rgba(233,233,237,0.7);">Dinámica de equipo</div>
+      </sc-if>
+      <sc-if value="{{ isEncuesta }}" hint-placeholder-val="{{ true }}">
+        <div onclick="{{ setTab_encuesta }}" style="padding:9px 18px;font-size:13px;cursor:pointer;border-left:1px solid rgba(233,233,237,0.16);background:#5c1424;color:#fff0f2;">Encuesta rápida</div>
+      </sc-if>
+      <sc-if value="{{ isNotEncuesta }}" hint-placeholder-val="{{ true }}">
+        <div onclick="{{ setTab_encuesta }}" style="padding:9px 18px;font-size:13px;cursor:pointer;border-left:1px solid rgba(233,233,237,0.16);color:rgba(233,233,237,0.7);">Encuesta rápida</div>
+      </sc-if>
+    </div>
+
+    <div style="padding:28px;border-radius:14px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(233,233,237,0.09);max-width:60ch;">
+      <p style="font-size:15px;line-height:1.6;margin:0;">{{ activeTabCopy }}</p>
+    </div>
+  </div>
+
+  </div>
+
+  </div>
+
+  <!-- BACK TO TOP -->
+  <div style="max-width:1280px;margin:0 auto;padding:20px 56px 72px;text-align:center;">
+    <h2 style="font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:26px;margin:0 0 8px;">¿Llegaste hasta acá?</h2>
+    <p style="font-size:14px;color:rgba(233,233,237,0.65);margin:0 0 24px;">Armá tu primera experiencia y probála vos mismo.</p>
+    <a href="#" style="display:inline-flex;align-items:center;gap:6px;font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:14px;color:#ffb3c0;background:rgba(255,45,79,0.16);border:1.5px solid #ff2d4f;border-radius:8px;padding:12px 24px;box-shadow:0 0 24px rgba(255,45,79,0.4);transition:transform 0.2s ease, background 0.2s ease;" style-hover="background:rgba(255,45,79,0.32);transform:scale(1.06);">Crear cuenta gratis</a>
+    <div style="margin-top:48px;">
+      <a href="#top" style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:rgba(233,233,237,0.6);" style-hover="color:#e9e9ed;"><i class="fa-solid fa-arrow-up"></i> Volver arriba</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="max-width:1280px;margin:0 auto;padding:0 56px 40px;">
+    <div style="height:1px;background:rgba(233,233,237,0.1);margin-bottom:24px;"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:15px;">Quilt</div>
+      <div style="font-size:12px;opacity:0.55;">Quilt made with love by MalvaLess ❤️</div>
+    </div>
+    <div style="display:flex;gap:20px;"><a href="#" style="font-size:13px;color:#e9e9ed;">Iniciar sesión</a><a href="#" style="font-size:13px;color:#ff2d4f;">Crear cuenta</a></div>
+    <div style="font-size:12px;opacity:0.55;">© 2026 Quilt. Cada experiencia, a tu medida.</div>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;heroFocus&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;general&quot;,&quot;options&quot;:[&quot;general&quot;,&quot;citas&quot;,&quot;equipo&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Contenido&quot;},&quot;showJourneyMockup&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Secciones&quot;}}">
+class Component extends DCLogic {
+  state = { tab: "citas", langOpen: false, lang: "ES", comoActive: 0, modActive: 0, navMenu: null };
+
+  componentDidMount() {
+    this._carouselTimer = setInterval(() => {
+      this.setState({
+        comoActive: (this.state.comoActive + 2) % 3,
+        modActive: (this.state.modActive + 2) % 3
+      });
+    }, 3200);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this._carouselTimer);
+  }
+
+  heroCopy = {
+    general: "Preguntas, minijuegos y recompensas combinados como una colcha — a tu manera. Creás tu cuenta, armás la experiencia, y quien juega entra con un link sin registrarse.",
+    citas: "Pensado para planear una cita distinta: creá tu cuenta, armá preguntas para tu pareja, sumá puntos y dejá que elija su premio — fecha y hora incluidas.",
+    equipo: "Creá tu cuenta y armá una dinámica para tu equipo: preguntas, minijuegos y un premio al final. Quien juega entra con un link, sin registrarse."
+  };
+
+  tabCopy = {
+    citas: "Armá preguntas sobre gustos y recuerdos, sumá puntos sin importar la respuesta, y dejá que tu pareja elija el plan — con fecha y hora incluidas si hace falta coordinar.",
+    equipo: "Usalo como rompehielos o cierre de reunión: preguntas rápidas, algún minijuego, y una recompensa simbólica al final para todo el equipo.",
+    encuesta: "Reemplazá el formulario aburrido por una secuencia con puntos y un pequeño premio al final — mejora la tasa de respuesta sin pedirle nada a nadie."
+  };
+
+  renderVals() {
+    const focus = this.props.heroFocus ?? "general";
+    const tab = this.state.tab;
+    return {
+      heroSubcopy: this.heroCopy[focus] ?? this.heroCopy.general,
+      showJourney: this.props.showJourneyMockup ?? true,
+      activeTabCopy: this.tabCopy[tab],
+      isCitas: tab === "citas",
+      isNotCitas: tab !== "citas",
+      isEquipo: tab === "equipo",
+      isNotEquipo: tab !== "equipo",
+      isEncuesta: tab === "encuesta",
+      isNotEncuesta: tab !== "encuesta",
+      setTab_citas: () => this.setState({ tab: "citas" }),
+      setTab_equipo: () => this.setState({ tab: "equipo" }),
+      setTab_encuesta: () => this.setState({ tab: "encuesta" }),
+      langMenuOpen: this.state.langOpen,
+      isEs: this.state.lang === "ES",
+      isNotEs: this.state.lang !== "ES",
+      isEn: this.state.lang === "EN",
+      isNotEn: this.state.lang !== "EN",
+      toggleLangMenu: () => this.setState({ langOpen: !this.state.langOpen }),
+      setLangEs: () => this.setState({ lang: "ES", langOpen: false }),
+      setLangEn: () => this.setState({ lang: "EN", langOpen: false }),
+      currentLang: this.state.lang,
+      ...this.slotVals("Como", this.state.comoActive),
+      ...this.slotVals("Mod", this.state.modActive),
+      menuProductoOpen: this.state.navMenu === "producto",
+      menuRecursosOpen: this.state.navMenu === "recursos",
+      openProducto: () => this.setState({ navMenu: "producto" }),
+      openRecursos: () => this.setState({ navMenu: "recursos" }),
+      closeMenu: () => this.setState({ navMenu: null })
+    };
+  }
+
+  slotVals(prefix, active) {
+    const vals = {};
+    for (let i = 0; i < 3; i++) {
+      const slot = (i - active + 3) % 3;
+      vals[`is${prefix}Center${i}`] = slot === 0;
+      vals[`is${prefix}Right${i}`] = slot === 1;
+      vals[`is${prefix}Left${i}`] = slot === 2;
+    }
+    return vals;
+  }
+}
+
+</script>
+</body>
+</html>

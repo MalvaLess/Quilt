@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body { margin: 0; background: #050505; }
+    *,*::before,*::after { box-sizing: border-box; }
+    ::selection { background: rgba(255,45,79,0.3); }
+    a { color: #ff2d4f; text-decoration: none; }
+  </style>
+</helmet>
+
+<div style="min-height:100vh;background:#050505;color:#e9e9ed;font-family:Inter,system-ui,sans-serif;">
+
+  <!-- LOGIN -->
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;">
+      <div style="width:100%;max-width:380px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:32px;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:22px;">
+          <img src="assets/quilt-logo-mark.png" alt="Quilt" style="width:36px;height:36px;border-radius:9px;">
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:19px;">Iniciar sesión</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div>
+            <label style="font-size:12px;color:rgba(233,233,237,0.6);display:block;margin-bottom:6px;">Email</label>
+            <input type="email" value="{{ email }}" onChange="{{ onEmailChange }}" placeholder="vos@email.com" style="width:100%;height:42px;padding:0 12px;border-radius:9px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.14);color:#e9e9ed;font-size:14px;font-family:Inter,system-ui,sans-serif;">
+          </div>
+          <div>
+            <label style="font-size:12px;color:rgba(233,233,237,0.6);display:block;margin-bottom:6px;">Contraseña</label>
+            <input type="password" value="{{ password }}" onChange="{{ onPasswordChange }}" placeholder="••••••••" style="width:100%;height:42px;padding:0 12px;border-radius:9px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.14);color:#e9e9ed;font-size:14px;font-family:Inter,system-ui,sans-serif;">
+          </div>
+          <div onclick="{{ doLogin }}" style="display:flex;align-items:center;justify-content:center;font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:14px;color:#ffb3c0;background:rgba(255,45,79,0.16);border:1.5px solid #ff2d4f;border-radius:9px;padding:12px;box-shadow:0 0 18px rgba(255,45,79,0.3);cursor:pointer;margin-top:6px;">Entrar</div>
+        </div>
+        <div style="text-align:center;font-size:13px;color:rgba(233,233,237,0.55);margin-top:18px;">¿No tenés cuenta? <span onclick="{{ goRegister }}" style="color:#ffb3c0;font-weight:600;cursor:pointer;">Registrate</span></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- REGISTER -->
+  <sc-if value="{{ isRegister }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;">
+      <div style="width:100%;max-width:380px;background:rgba(255,255,255,0.045);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:32px;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:22px;">
+          <img src="assets/quilt-logo-mark.png" alt="Quilt" style="width:36px;height:36px;border-radius:9px;">
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:19px;">Crear cuenta</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div>
+            <label style="font-size:12px;color:rgba(233,233,237,0.6);display:block;margin-bottom:6px;">Nombre</label>
+            <input type="text" value="{{ regName }}" onChange="{{ onRegNameChange }}" placeholder="Tu nombre" style="width:100%;height:42px;padding:0 12px;border-radius:9px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.14);color:#e9e9ed;font-size:14px;font-family:Inter,system-ui,sans-serif;">
+          </div>
+          <div>
+            <label style="font-size:12px;color:rgba(233,233,237,0.6);display:block;margin-bottom:6px;">Email</label>
+            <input type="email" value="{{ email }}" onChange="{{ onEmailChange }}" placeholder="vos@email.com" style="width:100%;height:42px;padding:0 12px;border-radius:9px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.14);color:#e9e9ed;font-size:14px;font-family:Inter,system-ui,sans-serif;">
+          </div>
+          <div>
+            <label style="font-size:12px;color:rgba(233,233,237,0.6);display:block;margin-bottom:6px;">Contraseña</label>
+            <input type="password" value="{{ password }}" onChange="{{ onPasswordChange }}" placeholder="••••••••" style="width:100%;height:42px;padding:0 12px;border-radius:9px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.14);color:#e9e9ed;font-size:14px;font-family:Inter,system-ui,sans-serif;">
+          </div>
+          <div onclick="{{ doRegister }}" style="display:flex;align-items:center;justify-content:center;font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:14px;color:#ffb3c0;background:rgba(255,45,79,0.16);border:1.5px solid #ff2d4f;border-radius:9px;padding:12px;box-shadow:0 0 18px rgba(255,45,79,0.3);cursor:pointer;margin-top:6px;">Crear cuenta</div>
+        </div>
+        <div style="text-align:center;font-size:13px;color:rgba(233,233,237,0.55);margin-top:18px;">¿Ya tenés cuenta? <span onclick="{{ goLogin }}" style="color:#ffb3c0;font-weight:600;cursor:pointer;">Iniciar sesión</span></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- DASHBOARD SHELL -->
+  <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ false }}">
+    <div>
+      <!-- TOPBAR -->
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 28px;border-bottom:1px solid rgba(255,255,255,0.08);">
+        <img src="assets/quilt-logo-mark.png" alt="Quilt" style="width:26px;height:26px;border-radius:7px;">
+        <div style="font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:16px;margin-right:auto;">Quilt</div>
+        <div style="font-size:13px;color:rgba(233,233,237,0.7);">{{ regName }}</div>
+        <div onclick="{{ logout }}" style="font-size:13px;color:rgba(233,233,237,0.55);cursor:pointer;">Cerrar sesión</div>
+      </div>
+
+      <div style="max-width:960px;margin:0 auto;padding:36px 24px;">
+
+        <!-- LIST VIEW -->
+        <sc-if value="{{ isListView }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+            <div style="font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:24px;">Tus experiencias</div>
+            <div onclick="{{ createExperience }}" style="display:inline-flex;align-items:center;gap:6px;font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:13px;color:#ffb3c0;background:rgba(255,45,79,0.16);border:1.5px solid #ff2d4f;border-radius:9px;padding:10px 18px;cursor:pointer;">+ Nueva experiencia</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;">
+            <sc-for list="{{ experiencesForList }}" as="exp" hint-placeholder-count="2">
+              <div style="background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:10px;">
+                <div onclick="{{ exp.onOpen }}" style="cursor:pointer;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <div style="font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:16px;">{{ exp.name }}</div>
+                    <div style="font-size:11px;padding:3px 10px;border-radius:6px;background:{{ exp.statusBg }};color:{{ exp.statusColor }};">{{ exp.statusLabel }}</div>
+                  </div>
+                  <div style="font-size:12px;color:rgba(233,233,237,0.55);margin-top:10px;">{{ exp.plays }} jugadas · {{ exp.moduleCount }} módulos</div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;">
+                  <i class="fa-solid fa-trash" onclick="{{ exp.onDelete }}" style="color:rgba(233,233,237,0.4);font-size:13px;cursor:pointer;padding:4px;" style-hover="color:#ff2d4f;"></i>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <!-- EDITOR VIEW -->
+        <sc-if value="{{ isEditorView }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <div onclick="{{ backToList }}" style="font-size:13px;color:rgba(233,233,237,0.6);cursor:pointer;"><i class="fa-solid fa-arrow-left"></i> Experiencias</div>
+          </div>
+          <div style="font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:24px;margin-bottom:18px;">{{ currentExpName }}</div>
+
+          <div style="display:flex;gap:4px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:24px;">
+            <div onclick="{{ tabGeneral }}" style="padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:{{ tabGeneralColor }};border-bottom:2px solid {{ tabGeneralBorder }};">General</div>
+            <div onclick="{{ tabModulos }}" style="padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:{{ tabModulosColor }};border-bottom:2px solid {{ tabModulosBorder }};">Módulos</div>
+            <div onclick="{{ tabRecompensas }}" style="padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:{{ tabRecompensasColor }};border-bottom:2px solid {{ tabRecompensasBorder }};">Recompensas</div>
+            <div onclick="{{ tabCompartir }}" style="padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:{{ tabCompartirColor }};border-bottom:2px solid {{ tabCompartirBorder }};">Compartir</div>
+            <div onclick="{{ tabRespuestas }}" style="padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:{{ tabRespuestasColor }};border-bottom:2px solid {{ tabRespuestasBorder }};">Respuestas</div>
+          </div>
+
+          <!-- GENERAL TAB -->
+          <sc-if value="{{ isTabGeneral }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:16px;max-width:440px;">
+              <div>
+                <label style="font-size:12px;color:rgba(233,233,237,0.6);display:block;margin-bottom:6px;">Nombre</label>
+                <input type="text" value="{{ genName }}" onChange="{{ onGenNameChange }}" style="width:100%;height:42px;padding:0 12px;border-radius:9px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.14);color:#e9e9ed;font-size:14px;font-family:Inter,system-ui,sans-serif;">
+              </div>
+
+              <div style="position:relative;">
+                <label style="font-size:12px;color:rgba(233,233,237,0.6);display:block;margin-bottom:6px;">Color de la experiencia</label>
+                <div onclick="{{ toggleColorPicker }}" style="display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:9px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.14);cursor:pointer;">
+                  <div style="width:18px;height:18px;border-radius:50%;background:{{ genColor }};border:1px solid rgba(255,255,255,0.2);"></div>
+                  <div style="font-size:13px;font-family:monospace;">{{ genColor }}</div>
+                </div>
+                <sc-if value="{{ colorPickerOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;top:70px;left:0;z-index:10;background:#130f11;border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:14px;box-shadow:0 16px 40px rgba(0,0,0,0.5);width:260px;">
+                    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:12px;">
+                      <sc-for list="{{ colorSwatches }}" as="sw" hint-placeholder-count="12">
+                        <div onclick="{{ sw.onSelect }}" style="width:28px;height:28px;border-radius:50%;background:{{ sw.hex }};cursor:pointer;border:2px solid {{ sw.ring }};"></div>
+                      </sc-for>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <input type="text" value="{{ genColor }}" onChange="{{ onGenColorChange }}" style="flex:1;height:36px;padding:0 10px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.14);color:#e9e9ed;font-size:12px;font-family:monospace;">
+                      <input type="color" value="{{ genColor }}" onChange="{{ onGenColorChange }}" style="width:36px;height:36px;padding:0;border-radius:8px;border:1px solid rgba(255,255,255,0.14);background:none;cursor:pointer;">
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+
+              <div>
+                <label style="font-size:12px;color:rgba(233,233,237,0.6);display:block;margin-bottom:6px;">Descripción</label>
+                <textarea value="{{ genDescription }}" onChange="{{ onGenDescriptionChange }}" placeholder="¿De qué trata esta experiencia?" style="width:100%;height:70px;resize:none;padding:10px 12px;border-radius:9px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.14);color:#e9e9ed;font-size:14px;font-family:Inter,system-ui,sans-serif;"></textarea>
+              </div>
+
+              <div>
+                <label style="font-size:12px;color:rgba(233,233,237,0.6);display:block;margin-bottom:6px;">Código de la experiencia</label>
+                <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 12px;">
+                  <div style="flex:1;font-size:13px;font-family:monospace;letter-spacing:0.02em;">{{ codeDisplay }}</div>
+                  <i class="{{ eyeIcon }}" onclick="{{ toggleLinkReveal }}" style="cursor:pointer;color:rgba(233,233,237,0.6);"></i>
+                </div>
+              </div>
+
+              <div>
+                <label style="font-size:12px;color:rgba(233,233,237,0.6);display:block;margin-bottom:6px;">Puntos por defecto para desbloquear recompensas</label>
+                <input type="number" value="{{ genDefaultUnlock }}" onChange="{{ onGenDefaultUnlockChange }}" style="width:120px;height:42px;padding:0 12px;border-radius:9px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.14);color:#e9e9ed;font-size:14px;font-family:Inter,system-ui,sans-serif;">
+                <div style="font-size:11px;color:rgba(233,233,237,0.5);margin-top:6px;">Se usa cuando una recompensa no tiene un puntaje propio asignado.</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- MODULOS TAB -->
+          <sc-if value="{{ isTabModulos }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+              <sc-for list="{{ modulesForEditor }}" as="mod" hint-placeholder-count="3">
+                <div draggable="true" onDragStart="{{ mod.onDragStart }}" onDragOver="{{ mod.onDragOver }}" onDragEnd="{{ mod.onDragEnd }}" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:10px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.08);cursor:grab;">
+                  <i class="fa-solid fa-grip-vertical" style="color:rgba(233,233,237,0.35);font-size:13px;"></i>
+                  <i class="{{ mod.icon }}" style="color:#ff2d4f;font-size:15px;width:18px;"></i>
+                  <input type="text" value="{{ mod.question }}" onChange="{{ mod.onQuestionChange }}" style="flex:1;background:transparent;border:none;color:#e9e9ed;font-size:14px;font-family:Inter,system-ui,sans-serif;outline:none;">
+                  <input type="number" value="{{ mod.points }}" onChange="{{ mod.onPointsChange }}" style="width:64px;height:32px;text-align:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#e9e9ed;font-size:12px;">
+                  <div style="font-size:11px;color:rgba(233,233,237,0.5);">pts</div>
+                  <i class="fa-solid fa-trash" onclick="{{ mod.onDelete }}" style="color:rgba(233,233,237,0.4);font-size:13px;cursor:pointer;"></i>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <div onclick="{{ addModuleChoice }}" style="font-size:12px;padding:8px 14px;border-radius:8px;background:rgba(255,255,255,0.05);cursor:pointer;"><i class="fa-solid fa-list-check"></i> Opción múltiple</div>
+              <div onclick="{{ addModuleText }}" style="font-size:12px;padding:8px 14px;border-radius:8px;background:rgba(255,255,255,0.05);cursor:pointer;"><i class="fa-solid fa-align-left"></i> Texto libre</div>
+              <div onclick="{{ addModulePhoto }}" style="font-size:12px;padding:8px 14px;border-radius:8px;background:rgba(255,255,255,0.05);cursor:pointer;"><i class="fa-solid fa-camera"></i> Foto</div>
+            </div>
+          </sc-if>
+
+          <!-- RECOMPENSAS TAB -->
+          <sc-if value="{{ isTabRecompensas }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+              <sc-for list="{{ rewardsForEditor }}" as="rw" hint-placeholder-count="3">
+                <div draggable="true" onDragStart="{{ rw.onDragStart }}" onDragOver="{{ rw.onDragOver }}" onDragEnd="{{ rw.onDragEnd }}" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:10px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.08);cursor:grab;">
+                  <i class="fa-solid fa-grip-vertical" style="color:rgba(233,233,237,0.35);font-size:13px;"></i>
+                  <div style="font-size:20px;">{{ rw.icon }}</div>
+                  <input type="text" value="{{ rw.name }}" onChange="{{ rw.onNameChange }}" style="flex:1;background:transparent;border:none;color:#e9e9ed;font-size:14px;font-family:Inter,system-ui,sans-serif;outline:none;">
+                  <div style="font-size:11px;color:rgba(233,233,237,0.5);">desde</div>
+                  <input type="number" value="{{ rw.points }}" onChange="{{ rw.onPointsChange }}" style="width:64px;height:32px;text-align:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#e9e9ed;font-size:12px;">
+                  <div style="font-size:11px;color:rgba(233,233,237,0.5);">pts</div>
+                  <div onclick="{{ rw.onToggleDateTime }}" style="font-size:11px;padding:6px 10px;border-radius:6px;cursor:pointer;background:{{ rw.dateTimeBg }};color:{{ rw.dateTimeColor }};white-space:nowrap;"><i class="fa-solid fa-calendar"></i> Fecha y hora</div>
+                  <i class="fa-solid fa-trash" onclick="{{ rw.onDelete }}" style="color:rgba(233,233,237,0.4);font-size:13px;cursor:pointer;"></i>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:20px;">
+              <div onclick="{{ addReward }}" style="font-size:12px;padding:8px 14px;border-radius:8px;background:rgba(255,255,255,0.05);cursor:pointer;">+ Agregar recompensa</div>
+            </div>
+            <div onclick="{{ toggleCustomReward }}" style="display:flex;align-items:center;justify-content:space-between;padding:14px;border-radius:10px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.08);cursor:pointer;">
+              <div>
+                <div style="font-size:14px;font-weight:600;">Permitir recompensa personalizada</div>
+                <div style="font-size:12px;color:rgba(233,233,237,0.55);margin-top:2px;">El jugador puede proponer la suya, ej. un picnic.</div>
+              </div>
+              <div style="width:38px;height:22px;border-radius:11px;background:{{ customRewardTrackBg }};position:relative;flex:none;">
+                <div style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:3px;left:{{ customRewardKnobLeft }};transition:left 0.2s ease;"></div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- COMPARTIR TAB -->
+          <sc-if value="{{ isTabCompartir }}" hint-placeholder-val="{{ false }}">
+            <div style="max-width:440px;">
+              <div style="font-size:13px;color:rgba(233,233,237,0.6);margin-bottom:8px;">Link de la experiencia</div>
+              <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 12px;">
+                <div style="flex:1;font-size:13px;font-family:monospace;letter-spacing:0.02em;color:#e9e9ed;">{{ linkDisplay }}</div>
+                <i class="{{ eyeIcon }}" onclick="{{ toggleLinkReveal }}" style="cursor:pointer;color:rgba(233,233,237,0.6);"></i>
+                <div onclick="{{ copyLink }}" style="font-size:12px;font-weight:600;color:#ffb3c0;cursor:pointer;white-space:nowrap;">{{ copyLabel }}</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- RESPUESTAS TAB -->
+          <sc-if value="{{ isTabRespuestas }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ hasResponses }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:0;">
+                <sc-for list="{{ responsesForEditor }}" as="resp" hint-placeholder-count="3">
+                  <div onclick="{{ resp.onToggle }}" style="display:flex;flex-direction:column;border-bottom:1px solid rgba(255,255,255,0.08);cursor:pointer;">
+                    <div style="display:flex;align-items:center;gap:14px;padding:14px 4px;">
+                      <div style="width:32px;height:32px;border-radius:50%;background:{{ resp.avatarBg }};display:flex;align-items:center;justify-content:center;font-size:12px;color:{{ resp.avatarColor }};flex:none;">{{ resp.initials }}</div>
+                      <div style="flex:1;font-size:14px;font-weight:600;">{{ resp.name }}</div>
+                      <i class="{{ resp.chevronIcon }}" style="color:rgba(233,233,237,0.4);font-size:12px;"></i>
+                    </div>
+                    <sc-if value="{{ resp.expanded }}" hint-placeholder-val="{{ false }}">
+                      <div style="padding:0 4px 16px 46px;display:flex;flex-direction:column;gap:10px;">
+                        <div style="display:flex;gap:14px;font-size:12px;">
+                          <div style="color:rgba(233,233,237,0.6);">{{ resp.points }} pts</div>
+                          <div style="color:#ffb3c0;">Recompensa: {{ resp.reward }}</div>
+                        </div>
+                        <sc-for list="{{ resp.qa }}" as="qa" hint-placeholder-count="3">
+                          <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 12px;">
+                            <div style="font-size:11px;color:rgba(233,233,237,0.5);margin-bottom:3px;">{{ qa.question }}</div>
+                            <div style="font-size:13px;">{{ qa.answer }}</div>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ hasNoResponses }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:13px;color:rgba(233,233,237,0.5);padding:20px 0;">Todavía no hay respuestas para esta experiencia.</div>
+            </sc-if>
+          </sc-if>
+
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+let idSeed = 100;
+const seedExperiences = () => ([
+  {
+    id: 1, name: "Encuesta rápida", status: "activa", plays: 12,
+    color: "#ff2d4f", description: "Encuesta corta con foto, para conocer al equipo.", code: "encuesta-rapida", defaultUnlockPoints: 15,
+    modules: [
+      { id: 1, type: "choice", icon: "fa-solid fa-list-check", question: "¿Preferís trabajar en equipo o de forma individual?", points: 15 },
+      { id: 2, type: "text", icon: "fa-solid fa-align-left", question: "Recomendá una banda para escuchar", points: 15 },
+      { id: 3, type: "photo", icon: "fa-solid fa-camera", question: "Subí una foto de tu espacio de trabajo ideal", points: 20 }
+    ],
+    rewards: [
+      { id: 1, icon: "☕", name: "Café", points: 15, needsDateTime: false },
+      { id: 2, icon: "🎬", name: "Tiempo libre", points: 30, needsDateTime: false },
+      { id: 3, icon: "🎁", name: "Sorpresa", points: 45, needsDateTime: true }
+    ],
+    customRewardEnabled: true,
+    responses: [
+      { name: "María J.", points: 50, reward: "Sorpresa", answers: ["En equipo", "Café Tacvba", "📷 adjunta"] },
+      { name: "Lucas T.", points: 30, reward: "Tiempo libre", answers: ["Individual", "The Strokes", "📷 adjunta"] },
+      { name: "Sofía P.", points: 45, reward: "Café", answers: ["En equipo", "Bomba Estéreo", "📷 adjunta"] }
+    ]
+  },
+  {
+    id: 2, name: "Trivia del equipo", status: "borrador", plays: 0,
+    color: "#4f9dff", description: "", code: "trivia-del-equipo", defaultUnlockPoints: 15,
+    modules: [
+      { id: 4, type: "choice", icon: "fa-solid fa-list-check", question: "¿Café o té en la oficina?", points: 10 }
+    ],
+    rewards: [
+      { id: 4, icon: "☕", name: "Vale de cafetería", points: 10, needsDateTime: false }
+    ],
+    customRewardEnabled: false,
+    responses: []
+  }
+]);
+
+const COLOR_SWATCHES = ["#ff2d4f", "#a31f3a", "#e8b13a", "#d1237a", "#e0672a", "#6c5ce7", "#4b3f9e", "#7d3fe0", "#2f8fd1", "#16a37a", "#2f9e6e", "#345b52"];
+
+class Component extends DCLogic {
+  state = {
+    authScreen: "login",
+    email: "", password: "", regName: "Vos",
+    view: "list", editorTab: "modulos",
+    selectedExpId: null, linkRevealed: false, copyLabel: "Copiar",
+    dragIndex: null, dragKind: null,
+    colorPickerOpen: false,
+    expandedResponse: null,
+    experiences: seedExperiences()
+  };
+
+  updateExp(id, updater) {
+    this.setState(s => ({
+      experiences: s.experiences.map(e => e.id === id ? updater(e) : e)
+    }));
+  }
+
+  renderVals() {
+    const s = this.state;
+    const currentExp = s.experiences.find(e => e.id === s.selectedExpId) || s.experiences[0];
+
+    const statusStyles = {
+      activa: { label: "Activa", bg: "rgba(255,45,79,0.18)", color: "#ffb3c0" },
+      borrador: { label: "Borrador", bg: "rgba(255,255,255,0.08)", color: "rgba(233,233,237,0.65)" }
+    };
+
+    const avatarPalette = [
+      { bg: "rgba(255,45,79,0.18)", color: "#ffb3c0" },
+      { bg: "rgba(79,157,255,0.18)", color: "#a8d8ff" },
+      { bg: "rgba(232,177,58,0.18)", color: "#ffe0a3" }
+    ];
+
+    const tabColor = (tab) => this.state.editorTab === tab ? "#ffb3c0" : "rgba(233,233,237,0.55)";
+    const tabBorder = (tab) => this.state.editorTab === tab ? "#ff2d4f" : "transparent";
+
+    return {
+      isLogin: s.authScreen === "login",
+      isRegister: s.authScreen === "register",
+      isDashboard: s.authScreen === null,
+      email: s.email,
+      password: s.password,
+      regName: s.regName,
+      onEmailChange: (e) => this.setState({ email: e.target.value }),
+      onPasswordChange: (e) => this.setState({ password: e.target.value }),
+      onRegNameChange: (e) => this.setState({ regName: e.target.value }),
+      doLogin: () => this.setState({ authScreen: null }),
+      doRegister: () => this.setState({ authScreen: null }),
+      goRegister: () => this.setState({ authScreen: "register" }),
+      goLogin: () => this.setState({ authScreen: "login" }),
+      logout: () => this.setState({ authScreen: "login", view: "list" }),
+
+      isListView: s.view === "list",
+      isEditorView: s.view === "editor",
+      backToList: () => this.setState({ view: "list" }),
+      createExperience: () => {
+        const id = ++idSeed;
+        const fresh = { id, name: "Nueva experiencia", status: "borrador", plays: 0, color: "#ff2d4f", description: "", code: "nueva-experiencia-" + id, defaultUnlockPoints: 15, modules: [], rewards: [], customRewardEnabled: false, responses: [] };
+        this.setState(s2 => ({ experiences: [...s2.experiences, fresh], selectedExpId: id, view: "editor", editorTab: "general" }));
+      },
+      experiencesForList: s.experiences.map(e => ({
+        id: e.id, name: e.name, plays: e.plays, moduleCount: e.modules.length,
+        statusLabel: statusStyles[e.status].label, statusBg: statusStyles[e.status].bg, statusColor: statusStyles[e.status].color,
+        onOpen: () => this.setState({ selectedExpId: e.id, view: "editor", editorTab: "general" }),
+        onDelete: (ev) => { ev.stopPropagation(); this.setState(s2 => ({ experiences: s2.experiences.filter(ee => ee.id !== e.id) })); }
+      })),
+
+      currentExpName: currentExp ? currentExp.name : "",
+
+      tabGeneral: () => this.setState({ editorTab: "general" }),
+      tabModulos: () => this.setState({ editorTab: "modulos" }),
+      tabRecompensas: () => this.setState({ editorTab: "recompensas" }),
+      tabCompartir: () => this.setState({ editorTab: "compartir" }),
+      tabRespuestas: () => this.setState({ editorTab: "respuestas" }),
+      tabGeneralColor: tabColor("general"), tabGeneralBorder: tabBorder("general"),
+      tabModulosColor: tabColor("modulos"), tabModulosBorder: tabBorder("modulos"),
+      tabRecompensasColor: tabColor("recompensas"), tabRecompensasBorder: tabBorder("recompensas"),
+      tabCompartirColor: tabColor("compartir"), tabCompartirBorder: tabBorder("compartir"),
+      tabRespuestasColor: tabColor("respuestas"), tabRespuestasBorder: tabBorder("respuestas"),
+      isTabGeneral: s.editorTab === "general",
+      isTabModulos: s.editorTab === "modulos",
+      isTabRecompensas: s.editorTab === "recompensas",
+      isTabCompartir: s.editorTab === "compartir",
+      isTabRespuestas: s.editorTab === "respuestas",
+
+      genName: currentExp ? currentExp.name : "",
+      onGenNameChange: (e) => this.updateExp(currentExp.id, exp => ({ ...exp, name: e.target.value })),
+      genColor: currentExp ? currentExp.color : "#ff2d4f",
+      onGenColorChange: (e) => this.updateExp(currentExp.id, exp => ({ ...exp, color: e.target.value })),
+      colorPickerOpen: s.colorPickerOpen,
+      toggleColorPicker: () => this.setState({ colorPickerOpen: !this.state.colorPickerOpen }),
+      colorSwatches: COLOR_SWATCHES.map(hex => ({
+        hex,
+        ring: currentExp && currentExp.color === hex ? "#ffffff" : "transparent",
+        onSelect: () => { this.updateExp(currentExp.id, exp => ({ ...exp, color: hex })); this.setState({ colorPickerOpen: false }); }
+      })),
+      genDescription: currentExp ? currentExp.description : "",
+      onGenDescriptionChange: (e) => this.updateExp(currentExp.id, exp => ({ ...exp, description: e.target.value })),
+      codeDisplay: s.linkRevealed ? (currentExp ? currentExp.code : "") : "••••••••••••",
+      genDefaultUnlock: currentExp ? currentExp.defaultUnlockPoints : 15,
+      onGenDefaultUnlockChange: (e) => this.updateExp(currentExp.id, exp => ({ ...exp, defaultUnlockPoints: Number(e.target.value) })),
+
+      modulesForEditor: currentExp ? currentExp.modules.map((m, i) => ({
+        id: m.id, icon: m.icon, question: m.question, points: m.points,
+        onQuestionChange: (e) => this.updateExp(currentExp.id, exp => ({ ...exp, modules: exp.modules.map((mm, ii) => ii === i ? { ...mm, question: e.target.value } : mm) })),
+        onPointsChange: (e) => this.updateExp(currentExp.id, exp => ({ ...exp, modules: exp.modules.map((mm, ii) => ii === i ? { ...mm, points: Number(e.target.value) } : mm) })),
+        onDelete: () => this.updateExp(currentExp.id, exp => ({ ...exp, modules: exp.modules.filter((mm, ii) => ii !== i) })),
+        onDragStart: () => this.setState({ dragIndex: i, dragKind: "module" }),
+        onDragOver: (e) => {
+          e.preventDefault();
+          const from = this.state.dragIndex;
+          if (this.state.dragKind !== "module" || from === null || from === i) return;
+          this.updateExp(currentExp.id, exp => {
+            const mods = [...exp.modules];
+            const [moved] = mods.splice(from, 1);
+            mods.splice(i, 0, moved);
+            return { ...exp, modules: mods };
+          });
+          this.setState({ dragIndex: i });
+        },
+        onDragEnd: () => this.setState({ dragIndex: null, dragKind: null })
+      })) : [],
+      addModuleChoice: () => this.updateExp(currentExp.id, exp => ({ ...exp, modules: [...exp.modules, { id: ++idSeed, type: "choice", icon: "fa-solid fa-list-check", question: "Nueva pregunta de opción múltiple", points: 10 }] })),
+      addModuleText: () => this.updateExp(currentExp.id, exp => ({ ...exp, modules: [...exp.modules, { id: ++idSeed, type: "text", icon: "fa-solid fa-align-left", question: "Nueva pregunta de texto libre", points: 10 }] })),
+      addModulePhoto: () => this.updateExp(currentExp.id, exp => ({ ...exp, modules: [...exp.modules, { id: ++idSeed, type: "photo", icon: "fa-solid fa-camera", question: "Nueva pregunta de foto", points: 10 }] })),
+
+      rewardsForEditor: currentExp ? currentExp.rewards.map((r, i) => ({
+        id: r.id, icon: r.icon, name: r.name, points: r.points,
+        dateTimeBg: r.needsDateTime ? "rgba(255,45,79,0.18)" : "rgba(255,255,255,0.06)",
+        dateTimeColor: r.needsDateTime ? "#ffb3c0" : "rgba(233,233,237,0.5)",
+        onNameChange: (e) => this.updateExp(currentExp.id, exp => ({ ...exp, rewards: exp.rewards.map((rr, ii) => ii === i ? { ...rr, name: e.target.value } : rr) })),
+        onPointsChange: (e) => this.updateExp(currentExp.id, exp => ({ ...exp, rewards: exp.rewards.map((rr, ii) => ii === i ? { ...rr, points: Number(e.target.value) } : rr) })),
+        onToggleDateTime: () => this.updateExp(currentExp.id, exp => ({ ...exp, rewards: exp.rewards.map((rr, ii) => ii === i ? { ...rr, needsDateTime: !rr.needsDateTime } : rr) })),
+        onDelete: () => this.updateExp(currentExp.id, exp => ({ ...exp, rewards: exp.rewards.filter((rr, ii) => ii !== i) })),
+        onDragStart: () => this.setState({ dragIndex: i, dragKind: "reward" }),
+        onDragOver: (e) => {
+          e.preventDefault();
+          const from = this.state.dragIndex;
+          if (this.state.dragKind !== "reward" || from === null || from === i) return;
+          this.updateExp(currentExp.id, exp => {
+            const rws = [...exp.rewards];
+            const [moved] = rws.splice(from, 1);
+            rws.splice(i, 0, moved);
+            return { ...exp, rewards: rws };
+          });
+          this.setState({ dragIndex: i });
+        },
+        onDragEnd: () => this.setState({ dragIndex: null, dragKind: null })
+      })) : [],
+      addReward: () => this.updateExp(currentExp.id, exp => ({ ...exp, rewards: [...exp.rewards, { id: ++idSeed, icon: "🎁", name: "Nueva recompensa", points: 10, needsDateTime: false }] })),
+      toggleCustomReward: () => this.updateExp(currentExp.id, exp => ({ ...exp, customRewardEnabled: !exp.customRewardEnabled })),
+      customRewardTrackBg: currentExp && currentExp.customRewardEnabled ? "#ff2d4f" : "rgba(255,255,255,0.15)",
+      customRewardKnobLeft: currentExp && currentExp.customRewardEnabled ? "19px" : "3px",
+
+      linkDisplay: s.linkRevealed ? ("quilt.app/e/" + (currentExp ? currentExp.id : "") + "-" + (currentExp ? currentExp.name.toLowerCase().replace(/\s+/g, "-") : "")) : "••••••••••••••••••",
+      eyeIcon: s.linkRevealed ? "fa-solid fa-eye-slash" : "fa-solid fa-eye",
+      toggleLinkReveal: () => this.setState({ linkRevealed: !this.state.linkRevealed }),
+      copyLabel: s.copyLabel,
+      copyLink: () => {
+        const link = "quilt.app/e/" + (currentExp ? currentExp.id : "") + "-" + (currentExp ? currentExp.name.toLowerCase().replace(/\s+/g, "-") : "");
+        if (navigator.clipboard) navigator.clipboard.writeText(link).catch(() => {});
+        this.setState({ copyLabel: "¡Copiado!" });
+        setTimeout(() => this.setState({ copyLabel: "Copiar" }), 1500);
+      },
+
+      hasResponses: currentExp && currentExp.responses.length > 0,
+      hasNoResponses: !(currentExp && currentExp.responses.length > 0),
+      responsesForEditor: currentExp ? currentExp.responses.map((r, i) => ({
+        name: r.name,
+        initials: r.name.split(" ").map(w => w[0]).join(""),
+        avatarBg: avatarPalette[i % 3].bg,
+        avatarColor: avatarPalette[i % 3].color,
+        points: r.points,
+        reward: r.reward,
+        expanded: s.expandedResponse === i,
+        chevronIcon: s.expandedResponse === i ? "fa-solid fa-chevron-up" : "fa-solid fa-chevron-down",
+        onToggle: () => this.setState({ expandedResponse: this.state.expandedResponse === i ? null : i }),
+        qa: currentExp.modules.map((m, mi) => ({ question: m.question, answer: r.answers[mi] ?? "—" }))
+      })) : []
+    };
+  }
+}
+
+</script>
+</body>
+</html>

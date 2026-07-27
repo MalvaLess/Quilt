@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<sc-if value="{{ isRojo }}" hint-placeholder-val="{{ true }}">
+  <div onclick="{{ onClick }}" style="perspective:1000px;height:140px;cursor:pointer;">
+    <div style="position:relative;width:100%;height:100%;transition:transform 0.6s cubic-bezier(0.4,0,0.2,1);transform-style:preserve-3d;transform:{{ flipTransform }};">
+      <div style="position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+        <div style="font-size:28px;">{{ icon }}</div>
+        <div style="font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:14px;text-align:center;">{{ rewardName }}</div>
+      </div>
+      <div style="position:absolute;inset:0;backface-visibility:hidden;transform:rotateY(180deg);border-radius:14px;background:rgba(255,45,79,0.1);border:1.5px solid #ff2d4f;box-shadow:0 0 22px rgba(255,45,79,0.3);display:flex;align-items:center;justify-content:center;padding:14px;">
+        <div style="font-size:12px;color:#ffb3c0;text-align:center;line-height:1.4;">{{ description }}</div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+<sc-if value="{{ isVerde }}" hint-placeholder-val="{{ false }}">
+  <div onclick="{{ onClick }}" style="perspective:1000px;height:140px;cursor:pointer;">
+    <div style="position:relative;width:100%;height:100%;transition:transform 0.6s cubic-bezier(0.4,0,0.2,1);transform-style:preserve-3d;transform:{{ flipTransform }};">
+      <div style="position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+        <div style="font-size:28px;">{{ icon }}</div>
+        <div style="font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:14px;text-align:center;">{{ rewardName }}</div>
+      </div>
+      <div style="position:absolute;inset:0;backface-visibility:hidden;transform:rotateY(180deg);border-radius:14px;background:rgba(46,204,113,0.1);border:1.5px solid #2ecc71;box-shadow:0 0 22px rgba(46,204,113,0.3);display:flex;align-items:center;justify-content:center;padding:14px;">
+        <div style="font-size:12px;color:#a8f0c6;text-align:center;line-height:1.4;">{{ description }}</div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+<sc-if value="{{ isAzul }}" hint-placeholder-val="{{ false }}">
+  <div onclick="{{ onClick }}" style="perspective:1000px;height:140px;cursor:pointer;">
+    <div style="position:relative;width:100%;height:100%;transition:transform 0.6s cubic-bezier(0.4,0,0.2,1);transform-style:preserve-3d;transform:{{ flipTransform }};">
+      <div style="position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+        <div style="font-size:28px;">{{ icon }}</div>
+        <div style="font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:14px;text-align:center;">{{ rewardName }}</div>
+      </div>
+      <div style="position:absolute;inset:0;backface-visibility:hidden;transform:rotateY(180deg);border-radius:14px;background:rgba(79,157,255,0.1);border:1.5px solid #4f9dff;box-shadow:0 0 22px rgba(79,157,255,0.3);display:flex;align-items:center;justify-content:center;padding:14px;">
+        <div style="font-size:12px;color:#b8dcff;text-align:center;line-height:1.4;">{{ description }}</div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+<sc-if value="{{ isDorado }}" hint-placeholder-val="{{ false }}">
+  <div onclick="{{ onClick }}" style="perspective:1000px;height:140px;cursor:pointer;">
+    <div style="position:relative;width:100%;height:100%;transition:transform 0.6s cubic-bezier(0.4,0,0.2,1);transform-style:preserve-3d;transform:{{ flipTransform }};">
+      <div style="position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+        <div style="font-size:28px;">{{ icon }}</div>
+        <div style="font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:14px;text-align:center;">{{ rewardName }}</div>
+      </div>
+      <div style="position:absolute;inset:0;backface-visibility:hidden;transform:rotateY(180deg);border-radius:14px;background:rgba(232,177,58,0.1);border:1.5px solid #e8b13a;box-shadow:0 0 22px rgba(232,177,58,0.3);display:flex;align-items:center;justify-content:center;padding:14px;">
+        <div style="font-size:12px;color:#ffe3a8;text-align:center;line-height:1.4;">{{ description }}</div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:200,&quot;height&quot;:140},&quot;icon&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;☕&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;rewardName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Café&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;description&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Vale por un café.&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;selected&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;rojo&quot;,&quot;options&quot;:[&quot;rojo&quot;,&quot;verde&quot;,&quot;azul&quot;,&quot;dorado&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;onClick&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;() =&gt; void&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const theme = this.props.theme ?? "rojo";
+    const selected = this.props.selected ?? false;
+    return {
+      icon: this.props.icon ?? "🎁",
+      rewardName: this.props.rewardName ?? "Recompensa",
+      description: this.props.description ?? "",
+      onClick: this.props.onClick ?? (() => {}),
+      flipTransform: selected ? "rotateY(180deg)" : "rotateY(0deg)",
+      isRojo: theme === "rojo",
+      isVerde: theme === "verde",
+      isAzul: theme === "azul",
+      isDorado: theme === "dorado"
+    };
+  }
+}
+
+</script>
+</body>
+</html>
