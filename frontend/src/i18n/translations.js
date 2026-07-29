@@ -217,6 +217,10 @@ export const translations = {
 
     dashboardPage: {
       logout: "Cerrar sesión",
+      saveChanges: "Guardar cambios",
+      saving: "Guardando...",
+      unsavedChanges: "Tenés cambios sin guardar.",
+      unsavedChangesConfirm: "Tenés cambios sin guardar. ¿Salir igual y perderlos?",
       yourExperiences: "Tus experiencias",
       newExperience: "+ Nueva experiencia",
       loading: "Cargando...",
@@ -568,6 +572,10 @@ export const translations = {
 
     dashboardPage: {
       logout: "Log out",
+      saveChanges: "Save changes",
+      saving: "Saving...",
+      unsavedChanges: "You have unsaved changes.",
+      unsavedChangesConfirm: "You have unsaved changes. Leave anyway and lose them?",
       yourExperiences: "Your experiences",
       newExperience: "+ New experience",
       loading: "Loading...",

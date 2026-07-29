@@ -7,6 +7,7 @@ import Logo from "../../components/Logo";
 import SiteBackground from "../../components/SiteBackground";
 import { useLanguage } from "../../i18n/LanguageContext";
 import AccountView from "./AccountView";
+import { darkenHex, lightenHex } from "../../utils/color";
 
 const TABS = ["general", "modulos", "recompensas", "compartir", "respuestas"];
 const TAB_LABEL_KEY = {
@@ -34,7 +35,7 @@ const rowInput = { flex: 1, background: "transparent", border: "none", color: "#
 const pointsInput = { width: 64, height: 32, textAlign: "center", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 6, color: "#e9e9ed", fontSize: 12 };
 const rowShell = { display: "flex", alignItems: "center", gap: 12, padding: 14, borderRadius: 10, background: "rgba(255,255,255,0.22)", backdropFilter: "blur(28px) saturate(160%)", WebkitBackdropFilter: "blur(28px) saturate(160%)", border: "1px solid rgba(255,255,255,0.34)", boxShadow: "0 8px 32px rgba(0,0,0,0.35)" };
 const addPill = { fontSize: 12, padding: "8px 14px", borderRadius: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.16)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 };
-const typeIcon = { color: "#ff2d4f", fontSize: 15, width: 18, textAlign: "center" };
+const typeIcon = { color: "var(--color-gem, #ff2d4f)", fontSize: 15, width: 18, textAlign: "center" };
 
 function GripIcon() {
   return (
@@ -76,6 +77,10 @@ export default function DashboardPage() {
   const [moduleError, setModuleError] = useState(null);
   const [langOpen, setLangOpen] = useState(false);
   const [reactivatedNotice, setReactivatedNotice] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const dirtyModuleIdsRef = useRef(new Set());
 
   useEffect(() => {
     if (localStorage.getItem("quilt_reactivated")) {
@@ -84,11 +89,7 @@ export default function DashboardPage() {
     }
   }, []);
 
-  const fullExpRef = useRef(null);
-  const saveTimers = useRef({});
-  useEffect(() => {
-    fullExpRef.current = fullExperience;
-  }, [fullExperience]);
+  const confirmDiscardIfDirty = () => !dirty || confirm(t("dashboardPage.unsavedChangesConfirm"));
 
   const loadExperiences = () =>
     api
@@ -134,6 +135,10 @@ export default function DashboardPage() {
   };
 
   const selectExperience = async (exp) => {
+    if (!confirmDiscardIfDirty()) return;
+    dirtyModuleIdsRef.current.clear();
+    setDirty(false);
+    setSaveError(null);
     setSelectedExp(exp);
     setExpandedPlayer(null);
     setView("editor");
@@ -179,6 +184,8 @@ export default function DashboardPage() {
         setSelectedExp(null);
         setFullExperience(null);
         setView("list");
+        dirtyModuleIdsRef.current.clear();
+        setDirty(false);
       }
     } catch (e) {
       alert(e.message);
@@ -191,54 +198,68 @@ export default function DashboardPage() {
     navigate("/login", { replace: true });
   };
 
-  // ---- experience field auto-save (General tab) ----
-  const patchExperienceField = (field, value, immediate = false) => {
+  // ---- experience field + module edits: staged locally, persisted only on "Guardar cambios" ----
+  const patchExperienceField = (field, value) => {
     setFullExperience((prev) => (prev ? { ...prev, [field]: value } : prev));
     setSelectedExp((prev) => (prev ? { ...prev, [field]: value } : prev));
-    const id = selectedExp.id;
-    const run = () =>
-      api
-        .updateExperience(id, { [field]: value })
-        .then((updated) => {
-          setExperiences((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
-        })
-        .catch((e) => setLoadError(e.message));
-    clearTimeout(saveTimers.current[field]);
-    if (immediate) run();
-    else saveTimers.current[field] = setTimeout(run, 500);
+    setDirty(true);
   };
 
-  // ---- module save (Módulos / Recompensas tabs) ----
-  const scheduleModuleSave = (moduleId) => {
-    clearTimeout(saveTimers.current[`mod-${moduleId}`]);
-    saveTimers.current[`mod-${moduleId}`] = setTimeout(() => {
-      const mod = fullExpRef.current?.modules.find((m) => m.id === moduleId);
-      if (!mod) return;
-      const payload =
-        mod.type === "question"
-          ? {
-              questions: mod.questions.map((q) => ({
-                prompt: q.prompt,
-                points: q.points,
-                repeatable: q.repeatable,
-                input_type: q.input_type,
-                options: q.input_type === "multiple_choice" ? q.options ?? [] : null,
-                image_id: q.image_id ?? null,
-              })),
-            }
-          : {
-              reward_options: mod.reward_options.map((r) => ({
-                id: r.id,
-                label: r.label,
-                description: r.description,
-                icon: r.icon,
-                unlock_points: r.unlock_points,
-                requires_datetime: r.requires_datetime,
-                one_per_player: r.one_per_player,
-              })),
-            };
-      api.updateModule(moduleId, payload).catch((e) => setModuleError(e.message));
-    }, 500);
+  const saveChanges = async () => {
+    if (!fullExperience) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const updated = await api.updateExperience(fullExperience.id, {
+        title: fullExperience.title,
+        description: fullExperience.description,
+        theme_color: fullExperience.theme_color,
+        reward_threshold: fullExperience.reward_threshold,
+        spend_points_on_claim: fullExperience.spend_points_on_claim,
+        status: fullExperience.status,
+      });
+      setExperiences((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
+      setSelectedExp((prev) => (prev ? { ...prev, ...updated } : prev));
+
+      for (const moduleId of dirtyModuleIdsRef.current) {
+        const mod = fullExperience.modules.find((m) => m.id === moduleId);
+        if (!mod) continue;
+        if (mod.type === "question") {
+          await api.updateModule(mod.id, {
+            questions: mod.questions.map((q) => ({
+              prompt: q.prompt,
+              points: q.points,
+              repeatable: q.repeatable,
+              input_type: q.input_type,
+              options: q.input_type === "multiple_choice" ? q.options ?? [] : null,
+              image_id: q.image_id ?? null,
+            })),
+          });
+        } else if (mod.type === "reward_picker") {
+          await api.updateModule(mod.id, {
+            reward_options: mod.reward_options.map((r) => ({
+              id: r.id,
+              label: r.label,
+              description: r.description,
+              icon: r.icon,
+              unlock_points: r.unlock_points,
+              requires_datetime: r.requires_datetime,
+              one_per_player: r.one_per_player,
+            })),
+            custom_reward_limit: mod.custom_reward_limit,
+            custom_reward_unlock_points: mod.custom_reward_unlock_points,
+          });
+        }
+      }
+      dirtyModuleIdsRef.current.clear();
+      setDirty(false);
+      await refreshFullExperience(fullExperience.id);
+    } catch (e) {
+      setSaveError(e.message);
+      throw e;
+    } finally {
+      setSaving(false);
+    }
   };
 
   const updateQuestionField = (moduleId, qIndex, field, value) => {
@@ -249,7 +270,8 @@ export default function DashboardPage() {
         m.id !== moduleId ? m : { ...m, questions: m.questions.map((q, i) => (i !== qIndex ? q : { ...q, [field]: value })) },
       ),
     }));
-    scheduleModuleSave(moduleId);
+    dirtyModuleIdsRef.current.add(moduleId);
+    setDirty(true);
   };
 
   const deleteQuestionRow = async (moduleId, qIndex) => {
@@ -270,7 +292,7 @@ export default function DashboardPage() {
       ...prev,
       modules: prev.modules.map((m) => (m.id !== moduleId ? m : { ...m, questions: remaining })),
     }));
-    clearTimeout(saveTimers.current[`mod-${moduleId}`]);
+    dirtyModuleIdsRef.current.delete(moduleId);
     try {
       await api.updateModule(moduleId, {
         questions: remaining.map((q) => ({
@@ -289,8 +311,16 @@ export default function DashboardPage() {
 
   const addQuestion = async (type) => {
     setModuleError(null);
+    if (dirty) {
+      try {
+        await saveChanges();
+      } catch (e) {
+        setModuleError(e.message);
+        return;
+      }
+    }
     const question = {
-      prompt: defaultPromptFor(type, t),
+      prompt: "",
       points: 10,
       repeatable: false,
       input_type: type,
@@ -375,38 +405,28 @@ export default function DashboardPage() {
   // ---- rewards ----
   const rewardModule = fullExperience?.modules.find((m) => m.type === "reward_picker") ?? null;
 
-  const updateRewardField = (moduleId, rIndex, field, value, immediate = false) => {
+  const updateRewardField = (moduleId, rIndex, field, value) => {
     setFullExperience((prev) => ({
       ...prev,
       modules: prev.modules.map((m) =>
         m.id !== moduleId ? m : { ...m, reward_options: m.reward_options.map((r, i) => (i !== rIndex ? r : { ...r, [field]: value })) },
       ),
     }));
-    if (immediate) {
-      clearTimeout(saveTimers.current[`mod-${moduleId}`]);
-      const mod = { ...fullExpRef.current.modules.find((m) => m.id === moduleId) };
-      const rewardOptions = mod.reward_options.map((r, i) => (i !== rIndex ? r : { ...r, [field]: value }));
-      api
-        .updateModule(moduleId, {
-          reward_options: rewardOptions.map((r) => ({
-            id: r.id,
-            label: r.label,
-            description: r.description,
-            icon: r.icon,
-            unlock_points: r.unlock_points,
-            requires_datetime: r.requires_datetime,
-            one_per_player: r.one_per_player,
-          })),
-        })
-        .catch((e) => setModuleError(e.message));
-    } else {
-      scheduleModuleSave(moduleId);
-    }
+    dirtyModuleIdsRef.current.add(moduleId);
+    setDirty(true);
   };
 
   const addReward = async () => {
     setModuleError(null);
-    const reward = { label: t("dashboardPage.defaultRewardLabel"), description: "", icon: "🎁", unlock_points: 10, requires_datetime: false, one_per_player: false };
+    if (dirty) {
+      try {
+        await saveChanges();
+      } catch (e) {
+        setModuleError(e.message);
+        return;
+      }
+    }
+    const reward = { label: "", description: "", icon: "🎁", unlock_points: 10, requires_datetime: false, one_per_player: false };
     try {
       if (rewardModule) {
         const rewardOptions = [...rewardModule.reward_options, reward];
@@ -443,7 +463,6 @@ export default function DashboardPage() {
       ...prev,
       modules: prev.modules.map((m) => (m.id !== moduleId ? m : { ...m, reward_options: remaining })),
     }));
-    clearTimeout(saveTimers.current[`mod-${moduleId}`]);
     try {
       await api.updateModule(moduleId, {
         reward_options: remaining.map((r) => ({
@@ -456,6 +475,7 @@ export default function DashboardPage() {
           one_per_player: r.one_per_player,
         })),
       });
+      dirtyModuleIdsRef.current.delete(moduleId);
     } catch (e) {
       setModuleError(e.message);
     }
@@ -469,7 +489,8 @@ export default function DashboardPage() {
       ...prev,
       modules: prev.modules.map((m) => (m.id !== rewardModule.id ? m : { ...m, custom_reward_limit: newLimit })),
     }));
-    api.updateModule(rewardModule.id, { custom_reward_limit: newLimit }).catch((e) => setModuleError(e.message));
+    dirtyModuleIdsRef.current.add(rewardModule.id);
+    setDirty(true);
   };
 
   const updateCustomRewardConfig = (field, value) => {
@@ -479,10 +500,8 @@ export default function DashboardPage() {
       ...prev,
       modules: prev.modules.map((m) => (m.id !== moduleId ? m : { ...m, [field]: value })),
     }));
-    clearTimeout(saveTimers.current[`mod-cfg-${moduleId}`]);
-    saveTimers.current[`mod-cfg-${moduleId}`] = setTimeout(() => {
-      api.updateModule(moduleId, { [field]: value }).catch((e) => setModuleError(e.message));
-    }, 500);
+    dirtyModuleIdsRef.current.add(moduleId);
+    setDirty(true);
   };
 
   const handleDeletePhoto = async (playerId, answerId, imageId) => {
@@ -556,7 +575,7 @@ export default function DashboardPage() {
       <div style={{ position: "relative", zIndex: 30, display: "flex", alignItems: "center", gap: 20, padding: "14px 28px", borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(23,18,20,0.55)", backdropFilter: "blur(12px)" }}>
         <Logo style={{ marginRight: "auto" }} />
         <div
-          onClick={() => setView("account")}
+          onClick={() => confirmDiscardIfDirty() && setView("account")}
           style={{ fontSize: 13, color: "rgba(233,233,237,0.7)", cursor: "pointer", textDecoration: "underline", textDecorationColor: "rgba(233,233,237,0.25)" }}
         >
           {creator?.display_name || creator?.email}
@@ -592,7 +611,7 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
-        <div onClick={handleLogout} style={{ fontSize: 13, color: "rgba(233,233,237,0.55)", cursor: "pointer" }}>
+        <div onClick={() => confirmDiscardIfDirty() && handleLogout()} style={{ fontSize: 13, color: "rgba(233,233,237,0.55)", cursor: "pointer" }}>
           {t("dashboardPage.logout")}
         </div>
       </div>
@@ -660,9 +679,27 @@ export default function DashboardPage() {
 
         {/* EDITOR VIEW */}
         {view === "editor" && selectedExp && (
-          <div>
+          <div
+            style={(() => {
+              const gem = fullExperience?.theme_color || selectedExp.theme_color || "#ff2d4f";
+              return {
+                "--color-gem": gem,
+                "--color-gem-light": lightenHex(gem, 0.64),
+                "--color-gem-dark": darkenHex(gem, 0.22),
+              };
+            })()}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-              <div onClick={() => setView("list")} style={{ fontSize: 13, color: "rgba(233,233,237,0.6)", cursor: "pointer" }}>
+              <div
+                onClick={() => {
+                  if (!confirmDiscardIfDirty()) return;
+                  dirtyModuleIdsRef.current.clear();
+                  setDirty(false);
+                  setSaveError(null);
+                  setView("list");
+                }}
+                style={{ fontSize: 13, color: "rgba(233,233,237,0.6)", cursor: "pointer" }}
+              >
                 <i className="fa-solid fa-arrow-left" /> {t("dashboardPage.backToList")}
               </div>
             </div>
@@ -673,12 +710,27 @@ export default function DashboardPage() {
                 <div
                   key={tabKey}
                   onClick={() => openTab(tabKey)}
-                  style={{ padding: "10px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", color: editorTab === tabKey ? "#ffb3c0" : "rgba(233,233,237,0.55)", borderBottom: `2px solid ${editorTab === tabKey ? "#ff2d4f" : "transparent"}` }}
+                  style={{ padding: "10px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", color: editorTab === tabKey ? "var(--color-gem-light)" : "rgba(233,233,237,0.55)", borderBottom: `2px solid ${editorTab === tabKey ? "var(--color-gem)" : "transparent"}` }}
                 >
                   {t(`dashboardPage.${TAB_LABEL_KEY[tabKey]}`)}
                 </div>
               ))}
             </div>
+
+            {dirty && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: "rgba(255,45,79,0.1)", border: "1px solid rgba(255,45,79,0.35)", borderRadius: 10, padding: "10px 14px", marginBottom: 20 }}>
+                <span style={{ fontSize: 13, color: "#ffb3c0" }}>{t("dashboardPage.unsavedChanges")}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  {saveError && <span style={{ fontSize: 12, color: "#ff2d4f" }}>{saveError}</span>}
+                  <div
+                    onClick={saving ? undefined : saveChanges}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 13, color: "#fff", background: "#ff2d4f", borderRadius: 8, padding: "8px 16px", cursor: saving ? "default" : "pointer", opacity: saving ? 0.6 : 1, whiteSpace: "nowrap" }}
+                  >
+                    {saving ? t("dashboardPage.saving") : t("dashboardPage.saveChanges")}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {fullExperience && editorTab === "general" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 440 }}>
@@ -694,7 +746,7 @@ export default function DashboardPage() {
 
                 <div style={{ position: "relative" }}>
                   <label style={fieldLabel}>{t("dashboardPage.fieldColor")}</label>
-                  <ColorPickerButton value={fullExperience.theme_color || "#ff2d4f"} onChange={(c) => patchExperienceField("theme_color", c, true)} />
+                  <ColorPickerButton value={fullExperience.theme_color || "#ff2d4f"} onChange={(c) => patchExperienceField("theme_color", c)} />
                 </div>
 
                 <div>
@@ -735,27 +787,27 @@ export default function DashboardPage() {
                 </div>
 
                 <div
-                  onClick={() => patchExperienceField("spend_points_on_claim", !fullExperience.spend_points_on_claim, true)}
+                  onClick={() => patchExperienceField("spend_points_on_claim", !fullExperience.spend_points_on_claim)}
                   style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: 14, borderRadius: 10, background: "rgba(255,255,255,0.22)", backdropFilter: "blur(28px) saturate(160%)", WebkitBackdropFilter: "blur(28px) saturate(160%)", border: "1px solid rgba(255,255,255,0.34)", boxShadow: "0 8px 32px rgba(0,0,0,0.35)", cursor: "pointer" }}
                 >
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 600 }}>{t("dashboardPage.spendPointsTitle")}</div>
                     <div style={{ fontSize: 12, color: "rgba(233,233,237,0.55)", marginTop: 2 }}>{t("dashboardPage.spendPointsSub")}</div>
                   </div>
-                  <div style={{ width: 38, height: 22, borderRadius: 11, background: fullExperience.spend_points_on_claim ? "#ff2d4f" : "rgba(255,255,255,0.15)", position: "relative", flex: "none" }}>
+                  <div style={{ width: 38, height: 22, borderRadius: 11, background: fullExperience.spend_points_on_claim ? "var(--color-gem)" : "rgba(255,255,255,0.15)", position: "relative", flex: "none" }}>
                     <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: fullExperience.spend_points_on_claim ? 19 : 3, transition: "left 0.2s ease" }} />
                   </div>
                 </div>
 
                 <div
-                  onClick={() => patchExperienceField("status", fullExperience.status === "published" ? "draft" : "published", true)}
+                  onClick={() => patchExperienceField("status", fullExperience.status === "published" ? "draft" : "published")}
                   style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: 14, borderRadius: 10, background: "rgba(255,255,255,0.22)", backdropFilter: "blur(28px) saturate(160%)", WebkitBackdropFilter: "blur(28px) saturate(160%)", border: "1px solid rgba(255,255,255,0.34)", boxShadow: "0 8px 32px rgba(0,0,0,0.35)", cursor: "pointer" }}
                 >
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 600 }}>{t("dashboardPage.activeToggleTitle")}</div>
                     <div style={{ fontSize: 12, color: "rgba(233,233,237,0.55)", marginTop: 2 }}>{t("dashboardPage.activeToggleSub")}</div>
                   </div>
-                  <div style={{ width: 38, height: 22, borderRadius: 11, background: fullExperience.status === "published" ? "#ff2d4f" : "rgba(255,255,255,0.15)", position: "relative", flex: "none" }}>
+                  <div style={{ width: 38, height: 22, borderRadius: 11, background: fullExperience.status === "published" ? "var(--color-gem)" : "rgba(255,255,255,0.15)", position: "relative", flex: "none" }}>
                     <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: fullExperience.status === "published" ? 19 : 3, transition: "left 0.2s ease" }} />
                   </div>
                 </div>
@@ -778,6 +830,7 @@ export default function DashboardPage() {
                             type="text"
                             value={q.prompt}
                             onChange={(e) => updateQuestionField(m.id, qIndex, "prompt", e.target.value)}
+                            placeholder={defaultPromptFor(q.input_type, t)}
                             style={rowInput}
                           />
                           <input
@@ -813,7 +866,7 @@ export default function DashboardPage() {
                           ) : (
                             <label style={{ cursor: "pointer" }}>
                               <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => handleImageSelect(m.id, qIndex, e.target.files?.[0])} />
-                              <span style={{ color: "#ffb3c0", textDecoration: "underline" }}>{t("dashboardPage.addImage")}</span>
+                              <span style={{ color: "var(--color-gem-light)", textDecoration: "underline" }}>{t("dashboardPage.addImage")}</span>
                             </label>
                           )}
                         </div>
@@ -835,7 +888,7 @@ export default function DashboardPage() {
                                 )}
                               </div>
                             ))}
-                            <span onClick={() => addOption(m.id, qIndex)} style={{ fontSize: 11, color: "#ffb3c0", textDecoration: "underline", cursor: "pointer" }}>
+                            <span onClick={() => addOption(m.id, qIndex)} style={{ fontSize: 11, color: "var(--color-gem-light)", textDecoration: "underline", cursor: "pointer" }}>
                               {t("dashboardPage.addOption")}
                             </span>
                           </div>
@@ -884,14 +937,14 @@ export default function DashboardPage() {
                         />
                         <div style={{ fontSize: 11, color: "rgba(233,233,237,0.5)" }}>{t("dashboardPage.rewardPts")}</div>
                         <div
-                          onClick={() => updateRewardField(rewardModule.id, rIndex, "requires_datetime", !r.requires_datetime, true)}
-                          style={{ fontSize: 11, padding: "6px 10px", borderRadius: 6, cursor: "pointer", background: r.requires_datetime ? "rgba(255,45,79,0.18)" : "rgba(255,255,255,0.06)", color: r.requires_datetime ? "#ffb3c0" : "rgba(233,233,237,0.5)", whiteSpace: "nowrap" }}
+                          onClick={() => updateRewardField(rewardModule.id, rIndex, "requires_datetime", !r.requires_datetime)}
+                          style={{ fontSize: 11, padding: "6px 10px", borderRadius: 6, cursor: "pointer", background: r.requires_datetime ? "color-mix(in srgb, var(--color-gem) 18%, transparent)" : "rgba(255,255,255,0.06)", color: r.requires_datetime ? "var(--color-gem-light)" : "rgba(233,233,237,0.5)", whiteSpace: "nowrap" }}
                         >
                           <i className="fa-solid fa-calendar" /> {t("dashboardPage.rewardDateToggle")}
                         </div>
                         <div
-                          onClick={() => updateRewardField(rewardModule.id, rIndex, "one_per_player", !r.one_per_player, true)}
-                          style={{ fontSize: 11, padding: "6px 10px", borderRadius: 6, cursor: "pointer", background: r.one_per_player ? "rgba(255,45,79,0.18)" : "rgba(255,255,255,0.06)", color: r.one_per_player ? "#ffb3c0" : "rgba(233,233,237,0.5)", whiteSpace: "nowrap" }}
+                          onClick={() => updateRewardField(rewardModule.id, rIndex, "one_per_player", !r.one_per_player)}
+                          style={{ fontSize: 11, padding: "6px 10px", borderRadius: 6, cursor: "pointer", background: r.one_per_player ? "color-mix(in srgb, var(--color-gem) 18%, transparent)" : "rgba(255,255,255,0.06)", color: r.one_per_player ? "var(--color-gem-light)" : "rgba(233,233,237,0.5)", whiteSpace: "nowrap" }}
                         >
                           <i className="fa-solid fa-user-check" /> {t("dashboardPage.rewardOnePerPlayerToggle")}
                         </div>
@@ -923,7 +976,7 @@ export default function DashboardPage() {
                     <div style={{ fontSize: 14, fontWeight: 600 }}>{t("dashboardPage.customRewardTitle")}</div>
                     <div style={{ fontSize: 12, color: "rgba(233,233,237,0.55)", marginTop: 2 }}>{t("dashboardPage.customRewardSub")}</div>
                   </div>
-                  <div style={{ width: 38, height: 22, borderRadius: 11, background: rewardModule?.custom_reward_limit != null ? "#ff2d4f" : "rgba(255,255,255,0.15)", position: "relative", flex: "none" }}>
+                  <div style={{ width: 38, height: 22, borderRadius: 11, background: rewardModule?.custom_reward_limit != null ? "var(--color-gem)" : "rgba(255,255,255,0.15)", position: "relative", flex: "none" }}>
                     <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: rewardModule?.custom_reward_limit != null ? 19 : 3, transition: "left 0.2s ease" }} />
                   </div>
                 </div>
@@ -974,7 +1027,7 @@ export default function DashboardPage() {
                       className={`fa-solid ${linkRevealed ? "fa-eye-slash" : "fa-eye"}`}
                       style={{ cursor: "pointer", color: "rgba(233,233,237,0.6)" }}
                     />
-                    <div onClick={copyLink} style={{ fontSize: 12, fontWeight: 600, color: "#ffb3c0", cursor: "pointer", whiteSpace: "nowrap" }}>
+                    <div onClick={copyLink} style={{ fontSize: 12, fontWeight: 600, color: "var(--color-gem-light)", cursor: "pointer", whiteSpace: "nowrap" }}>
                       {linkCopied ? t("dashboardPage.copied") : t("dashboardPage.copy")}
                     </div>
                   </div>
@@ -991,7 +1044,7 @@ export default function DashboardPage() {
                       className={`fa-solid ${linkRevealed ? "fa-eye-slash" : "fa-eye"}`}
                       style={{ cursor: "pointer", color: "rgba(233,233,237,0.6)" }}
                     />
-                    <div onClick={copyCode} style={{ fontSize: 12, fontWeight: 600, color: "#ffb3c0", cursor: "pointer", whiteSpace: "nowrap" }}>
+                    <div onClick={copyCode} style={{ fontSize: 12, fontWeight: 600, color: "var(--color-gem-light)", cursor: "pointer", whiteSpace: "nowrap" }}>
                       {codeCopied ? t("dashboardPage.copied") : t("dashboardPage.copy")}
                     </div>
                   </div>
@@ -1027,7 +1080,7 @@ export default function DashboardPage() {
                       <div style={{ padding: "0 4px 16px 46px", display: "flex", flexDirection: "column", gap: 10 }} onClick={(e) => e.stopPropagation()}>
                         <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 12 }}>
                           <div style={{ color: "rgba(233,233,237,0.6)" }}>{p.total_points} {t("dashboardPage.pointsLabel")}</div>
-                          <div style={{ color: "#ffb3c0" }}>{t("dashboardPage.rewardChosenLabel")} {p.reward_chosen || t("dashboardPage.noRewardChosen")}</div>
+                          <div style={{ color: "var(--color-gem-light)" }}>{t("dashboardPage.rewardChosenLabel")} {p.reward_chosen || t("dashboardPage.noRewardChosen")}</div>
                           {p.answers.length > 0 && (
                             <div
                               onClick={() => handleDeleteAllAnswers(p.id)}
