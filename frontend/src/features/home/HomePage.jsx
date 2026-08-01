@@ -535,41 +535,76 @@ export default function HomePage() {
             <div id="como-funciona" style={{ maxWidth: 1280, margin: "0 auto", padding: `64px ${sidePad}px` }}>
               <h6 style={{ fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", color: "#ff2d4f", margin: "0 0 8px" }}>{t("howItWorks.eyebrow")}</h6>
               <h2 style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 500, fontSize: 32, margin: "0 0 40px", maxWidth: "20ch" }}>{t("howItWorks.title")}</h2>
-              <div style={{ position: "relative", height: 210 }}>
-                {comoFunciona.map((item, i) => {
-                  const activeSlot = (i - comoActive + comoFunciona.length) % comoFunciona.length === 0;
-                  return (
-                    <div key={item.title} style={slotStyle(i, comoActive, comoFunciona.length, 12)}>
-                      <div style={{ width: 40, height: 40, borderRadius: 10, background: activeSlot ? "rgba(255,45,79,0.22)" : "rgba(255,45,79,0.14)", border: `1px solid ${activeSlot ? "rgba(255,45,79,0.4)" : "rgba(255,45,79,0.25)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <i className={item.icon} style={{ fontSize: 16, color: "#ff2d4f" }} />
-                      </div>
-                      <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 500, fontSize: 17 }}>{item.title}</div>
-                      <p style={{ fontSize: 13, opacity: activeSlot ? 0.75 : 0.7, margin: 0 }}>{item.desc}</p>
+              {isMobile ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  <div style={{ padding: 24, borderRadius: 12, background: "rgba(255,45,79,0.05)", border: "1px solid rgba(255,45,79,0.5)", boxShadow: "0 8px 24px rgba(0,0,0,0.45), 0 0 24px rgba(255,45,79,0.15)", display: "flex", flexDirection: "column", gap: 12 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(255,45,79,0.22)", border: "1px solid rgba(255,45,79,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <i className={comoFunciona[comoActive].icon} style={{ fontSize: 16, color: "#ff2d4f" }} />
                     </div>
-                  );
-                })}
-              </div>
+                    <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 500, fontSize: 17 }}>{comoFunciona[comoActive].title}</div>
+                    <p style={{ fontSize: 13, opacity: 0.75, margin: 0 }}>{comoFunciona[comoActive].desc}</p>
+                  </div>
+                  <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
+                    {comoFunciona.map((_, i) => (
+                      <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: i === comoActive ? "#ff2d4f" : "rgba(233,233,237,0.2)" }} />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ position: "relative", height: 210 }}>
+                  {comoFunciona.map((item, i) => {
+                    const activeSlot = (i - comoActive + comoFunciona.length) % comoFunciona.length === 0;
+                    return (
+                      <div key={item.title} style={slotStyle(i, comoActive, comoFunciona.length, 12)}>
+                        <div style={{ width: 40, height: 40, borderRadius: 10, background: activeSlot ? "rgba(255,45,79,0.22)" : "rgba(255,45,79,0.14)", border: `1px solid ${activeSlot ? "rgba(255,45,79,0.4)" : "rgba(255,45,79,0.25)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <i className={item.icon} style={{ fontSize: 16, color: "#ff2d4f" }} />
+                        </div>
+                        <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 500, fontSize: 17 }}>{item.title}</div>
+                        <p style={{ fontSize: 13, opacity: activeSlot ? 0.75 : 0.7, margin: 0 }}>{item.desc}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* MODULOS */}
             <div id="modulos" style={{ maxWidth: 1280, margin: "0 auto", padding: `64px ${sidePad}px` }}>
               <h6 style={{ fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", color: "#ff2d4f", margin: "0 0 8px" }}>{t("modulesSection.eyebrow")}</h6>
               <h2 style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 500, fontSize: 32, margin: "0 0 40px", maxWidth: "24ch" }}>{t("modulesSection.title")}</h2>
-              <div style={{ position: "relative", height: 250 }}>
-                {modulos.map((item, i) => {
-                  const activeSlot = (i - modActive + modulos.length) % modulos.length === 0;
-                  return (
-                    <div key={item.title} style={slotStyle(i, modActive, modulos.length, 14)}>
-                      <div style={{ width: 40, height: 40, borderRadius: 10, background: activeSlot ? "rgba(255,45,79,0.22)" : "rgba(255,45,79,0.14)", border: `1px solid ${activeSlot ? "rgba(255,45,79,0.4)" : "rgba(255,45,79,0.25)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <i className={item.icon} style={{ fontSize: 16, color: "#ff2d4f" }} />
-                      </div>
-                      <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 500, fontSize: 17 }}>{item.title}</div>
-                      <p style={{ fontSize: 13, opacity: activeSlot ? 0.75 : 0.7, margin: 0, flex: 1 }}>{item.desc}</p>
-                      <div style={{ display: "inline-flex", alignSelf: "flex-start", fontSize: 11, padding: "3px 10px", borderRadius: 6, background: activeSlot ? "rgba(255,45,79,0.22)" : "#5c1424", color: "#fff0f2" }}>{item.pts}</div>
+              {isMobile ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  <div style={{ padding: 24, borderRadius: 12, background: "rgba(255,45,79,0.05)", border: "1px solid rgba(255,45,79,0.5)", boxShadow: "0 8px 24px rgba(0,0,0,0.45), 0 0 24px rgba(255,45,79,0.15)", display: "flex", flexDirection: "column", gap: 12 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(255,45,79,0.22)", border: "1px solid rgba(255,45,79,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <i className={modulos[modActive].icon} style={{ fontSize: 16, color: "#ff2d4f" }} />
                     </div>
-                  );
-                })}
-              </div>
+                    <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 500, fontSize: 17 }}>{modulos[modActive].title}</div>
+                    <p style={{ fontSize: 13, opacity: 0.75, margin: 0 }}>{modulos[modActive].desc}</p>
+                    <div style={{ display: "inline-flex", alignSelf: "flex-start", fontSize: 11, padding: "3px 10px", borderRadius: 6, background: "rgba(255,45,79,0.22)", color: "#fff0f2" }}>{modulos[modActive].pts}</div>
+                  </div>
+                  <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
+                    {modulos.map((_, i) => (
+                      <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: i === modActive ? "#ff2d4f" : "rgba(233,233,237,0.2)" }} />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ position: "relative", height: 250 }}>
+                  {modulos.map((item, i) => {
+                    const activeSlot = (i - modActive + modulos.length) % modulos.length === 0;
+                    return (
+                      <div key={item.title} style={slotStyle(i, modActive, modulos.length, 14)}>
+                        <div style={{ width: 40, height: 40, borderRadius: 10, background: activeSlot ? "rgba(255,45,79,0.22)" : "rgba(255,45,79,0.14)", border: `1px solid ${activeSlot ? "rgba(255,45,79,0.4)" : "rgba(255,45,79,0.25)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <i className={item.icon} style={{ fontSize: 16, color: "#ff2d4f" }} />
+                        </div>
+                        <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 500, fontSize: 17 }}>{item.title}</div>
+                        <p style={{ fontSize: 13, opacity: activeSlot ? 0.75 : 0.7, margin: 0, flex: 1 }}>{item.desc}</p>
+                        <div style={{ display: "inline-flex", alignSelf: "flex-start", fontSize: 11, padding: "3px 10px", borderRadius: 6, background: activeSlot ? "rgba(255,45,79,0.22)" : "#5c1424", color: "#fff0f2" }}>{item.pts}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* BUILDER MOCKUP */}
