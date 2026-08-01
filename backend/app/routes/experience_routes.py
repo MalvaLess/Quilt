@@ -1,12 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 from app.database import get_db
+from app.models.answer import Answer
 from app.models.creator import Creator
 from app.models.experience import Experience
+from app.models.module import Module
+from app.models.player import Player
+from app.models.question import Question
 from app.schemas.experience import ExperienceCreate, ExperienceOut, ExperienceUpdate
 from app.services.auth_service import get_current_creator
 from app.services.ownership import get_owned_experience
-from app.services.uploads import image_url
+from app.services.uploads import image_url, purge_orphaned_images
 
 router = APIRouter(prefix="/api/experiences", tags=["experiences"])
 
@@ -47,7 +51,16 @@ def get_experience_full(
     db: Session = Depends(get_db),
     current_creator: Creator = Depends(get_current_creator),
 ):
-    exp = get_owned_experience(experience_id, current_creator, db)
+    owned = get_owned_experience(experience_id, current_creator, db)
+    exp = (
+        db.query(Experience)
+        .options(
+            selectinload(Experience.modules).selectinload(Module.questions).joinedload(Question.image),
+            selectinload(Experience.modules).selectinload(Module.reward_options),
+        )
+        .filter(Experience.id == owned.id)
+        .first()
+    )
     return {
         "id": exp.id,
         "title": exp.title,
@@ -117,6 +130,24 @@ def delete_experience(
     current_creator: Creator = Depends(get_current_creator),
 ):
     exp = get_owned_experience(experience_id, current_creator, db)
+
+    question_image_ids = {
+        row[0]
+        for row in db.query(Question.image_id)
+        .join(Module, Question.module_id == Module.id)
+        .filter(Module.experience_id == exp.id, Question.image_id.isnot(None))
+        .all()
+    }
+    answer_image_ids = {
+        row[0]
+        for row in db.query(Answer.response_image_id)
+        .join(Player, Answer.player_id == Player.id)
+        .filter(Player.experience_id == exp.id, Answer.response_image_id.isnot(None))
+        .all()
+    }
+
     db.delete(exp)
     db.commit()
+
+    purge_orphaned_images(db, question_image_ids | answer_image_ids)
     return {"deleted": True}

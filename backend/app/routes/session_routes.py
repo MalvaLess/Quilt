@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 from app.database import get_db
 from app.models.answer import Answer
 from app.models.creator import Creator
 from app.models.player import Player
 from app.models.experience import Experience
+from app.models.reward_selection import RewardSelection
 from app.models.uploaded_image import UploadedImage
 from app.services.auth_service import get_current_creator
 from app.services.uploads import delete_image_file, image_url
@@ -50,6 +51,18 @@ def list_players(
     if experience.creator_id != current_creator.id:
         raise HTTPException(403, "No tenés permiso sobre esta experiencia")
 
+    experience = (
+        db.query(Experience)
+        .options(
+            selectinload(Experience.players).selectinload(Player.answers).joinedload(Answer.question),
+            selectinload(Experience.players).selectinload(Player.answers).joinedload(Answer.response_image),
+            selectinload(Experience.players).selectinload(Player.reward_selections).joinedload(RewardSelection.reward_option),
+            selectinload(Experience.players).selectinload(Player.reward_selections).joinedload(RewardSelection.custom_reward),
+        )
+        .filter(Experience.id == experience.id)
+        .first()
+    )
+
     return [
         {
             "id": p.id,
@@ -84,6 +97,17 @@ def get_player_detail(
     current_creator: Creator = Depends(get_current_creator),
 ):
     player = get_owned_player(player_id, current_creator, db)
+    player = (
+        db.query(Player)
+        .options(
+            selectinload(Player.answers).joinedload(Answer.question),
+            selectinload(Player.answers).joinedload(Answer.response_image),
+            selectinload(Player.reward_selections).joinedload(RewardSelection.reward_option),
+            selectinload(Player.reward_selections).joinedload(RewardSelection.custom_reward),
+        )
+        .filter(Player.id == player.id)
+        .first()
+    )
 
     return {
         "id": player.id,

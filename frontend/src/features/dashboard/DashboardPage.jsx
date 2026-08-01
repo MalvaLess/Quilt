@@ -31,9 +31,9 @@ const AVATAR_PALETTE = [
 
 const fieldLabel = { fontSize: 12, color: "rgba(233,233,237,0.6)", display: "block", marginBottom: 6 };
 const fieldInput = { width: "100%", height: 42, padding: "0 12px", borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.14)", color: "#e9e9ed", fontSize: 14, fontFamily: "Inter,system-ui,sans-serif" };
-const rowInput = { flex: 1, background: "transparent", border: "none", color: "#e9e9ed", fontSize: 14, fontFamily: "Inter,system-ui,sans-serif", outline: "none" };
+const rowInput = { flex: 1, minWidth: 120, background: "transparent", border: "none", color: "#e9e9ed", fontSize: 14, fontFamily: "Inter,system-ui,sans-serif", outline: "none" };
 const pointsInput = { width: 64, height: 32, textAlign: "center", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 6, color: "#e9e9ed", fontSize: 12 };
-const rowShell = { display: "flex", alignItems: "center", gap: 12, padding: 14, borderRadius: 10, background: "rgba(255,255,255,0.22)", backdropFilter: "blur(28px) saturate(160%)", WebkitBackdropFilter: "blur(28px) saturate(160%)", border: "1px solid rgba(255,255,255,0.34)", boxShadow: "0 8px 32px rgba(0,0,0,0.35)" };
+const rowShell = { display: "flex", alignItems: "center", flexWrap: "wrap", gap: 12, padding: 14, borderRadius: 10, background: "rgba(255,255,255,0.22)", backdropFilter: "blur(28px) saturate(160%)", WebkitBackdropFilter: "blur(28px) saturate(160%)", border: "1px solid rgba(255,255,255,0.34)", boxShadow: "0 8px 32px rgba(0,0,0,0.35)" };
 const addPill = { fontSize: 12, padding: "8px 14px", borderRadius: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.16)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 };
 const typeIcon = { color: "var(--color-gem, #ff2d4f)", fontSize: 15, width: 18, textAlign: "center" };
 
@@ -605,11 +605,11 @@ export default function DashboardPage() {
     <div style={{ minHeight: "100vh", background: "#050505", color: "#e9e9ed", fontFamily: "Inter,system-ui,sans-serif", position: "relative" }}>
       <SiteBackground />
       {/* TOPBAR */}
-      <div style={{ position: "relative", zIndex: 30, display: "flex", alignItems: "center", gap: 20, padding: "14px 28px", borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(23,18,20,0.55)", backdropFilter: "blur(12px)" }}>
+      <div style={{ position: "relative", zIndex: 30, display: "flex", alignItems: "center", flexWrap: "wrap", gap: 12, padding: "14px 28px", borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(23,18,20,0.55)", backdropFilter: "blur(12px)" }}>
         <Logo style={{ marginRight: "auto" }} />
         <div
           onClick={() => confirmDiscardIfDirty() && setView("account")}
-          style={{ fontSize: 13, color: "rgba(233,233,237,0.7)", cursor: "pointer", textDecoration: "underline", textDecorationColor: "rgba(233,233,237,0.25)" }}
+          style={{ fontSize: 13, color: "rgba(233,233,237,0.7)", cursor: "pointer", textDecoration: "underline", textDecorationColor: "rgba(233,233,237,0.25)", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
         >
           {creator?.display_name || creator?.email}
         </div>
@@ -738,12 +738,12 @@ export default function DashboardPage() {
             </div>
             <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 24, marginBottom: 18 }}>{selectedExp.title}</div>
 
-            <div style={{ display: "flex", gap: 4, borderBottom: "1px solid rgba(255,255,255,0.08)", marginBottom: 24 }}>
+            <div style={{ display: "flex", gap: 4, borderBottom: "1px solid rgba(255,255,255,0.08)", marginBottom: 24, overflowX: "auto" }}>
               {TABS.map((tabKey) => (
                 <div
                   key={tabKey}
                   onClick={() => openTab(tabKey)}
-                  style={{ padding: "10px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", color: editorTab === tabKey ? "var(--color-gem-light)" : "rgba(233,233,237,0.55)", borderBottom: `2px solid ${editorTab === tabKey ? "var(--color-gem)" : "transparent"}` }}
+                  style={{ padding: "10px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", flex: "none", color: editorTab === tabKey ? "var(--color-gem-light)" : "rgba(233,233,237,0.55)", borderBottom: `2px solid ${editorTab === tabKey ? "var(--color-gem)" : "transparent"}` }}
                 >
                   {t(`dashboardPage.${TAB_LABEL_KEY[tabKey]}`)}
                 </div>
@@ -960,7 +960,7 @@ export default function DashboardPage() {
                   {moduleError && <p style={{ color: "#ff2d4f", fontSize: 13 }}>{moduleError}</p>}
                   {(rewardModule?.reward_options ?? []).map((r, rIndex) => (
                     <div key={rIndex} style={{ ...rowShell, flexDirection: "column", alignItems: "stretch", gap: 10 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
                         <GripIcon />
                         <EmojiPickerButton
                           value={r.icon}

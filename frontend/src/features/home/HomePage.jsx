@@ -5,6 +5,7 @@ import { api, clearApiCache } from "../../api/client";
 import Logo from "../../components/Logo";
 import SiteBackground from "../../components/SiteBackground";
 import { useLanguage } from "../../i18n/LanguageContext";
+import useIsMobile from "../../hooks/useIsMobile";
 
 function parseSlug(input) {
   const trimmed = input.trim();
@@ -188,9 +189,12 @@ const ghostBtnHover = { background: "rgba(233,233,237,0.07)", transform: "scale(
 export default function HomePage() {
   const navigate = useNavigate();
   const { language, setLanguage, t } = useLanguage();
+  const isMobile = useIsMobile();
+  const sidePad = isMobile ? 20 : 56;
   const [code, setCode] = useState("");
   const [error, setError] = useState(null);
   const [navMenu, setNavMenu] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [tab, setTab] = useState("citas");
   const [me, setMe] = useState(null);
@@ -243,6 +247,76 @@ export default function HomePage() {
         <div style={{ position: "relative" }}>
           <div style={{ position: "relative", zIndex: 1 }}>
             {/* NAV */}
+            {isMobile ? (
+              <div id="top" style={{ position: "fixed", top: 12, left: "50%", transform: "translateX(-50%)", width: "92%", maxWidth: 480, zIndex: 50 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px", borderRadius: 16, background: "rgba(23,18,20,0.85)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,45,79,0.22)", boxShadow: "0 0 24px rgba(255,45,79,0.08)" }}>
+                  <Logo />
+                  <div
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    style={{ width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#e9e9ed", flex: "none" }}
+                  >
+                    <i className={`fa-solid ${mobileMenuOpen ? "fa-xmark" : "fa-bars"}`} style={{ fontSize: 18 }} />
+                  </div>
+                </div>
+                {mobileMenuOpen && (
+                  <div style={{ marginTop: 8, background: "#130f11", border: "1px solid rgba(233,233,237,0.1)", borderRadius: 14, padding: 10, display: "flex", flexDirection: "column", gap: 4, boxShadow: "0 16px 40px rgba(0,0,0,0.5)", maxHeight: "70vh", overflowY: "auto" }}>
+                    <DropdownItem href="#como-funciona" icon="fa-solid fa-diagram-project" title={t("nav.howItWorksTitle")} desc={t("nav.howItWorksDesc")} />
+                    <DropdownItem href="#modulos" icon="fa-solid fa-shapes" title={t("nav.modulesTitle")} desc={t("nav.modulesDesc")} />
+                    <DropdownItem href="#casos" icon="fa-solid fa-lightbulb" title={t("nav.useCasesTitle")} desc={t("nav.useCasesDesc")} />
+                    <DropdownItem href="#jugador" icon="fa-solid fa-gamepad" title={t("nav.imPlayerTitle")} desc={t("nav.imPlayerDesc")} />
+                    <div style={{ height: 1, background: "rgba(233,233,237,0.1)", margin: "6px 0" }} />
+                    {me ? (
+                      <>
+                        <Link
+                          to="/dashboard"
+                          onClick={() => setMobileMenuOpen(false)}
+                          style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 10px", borderRadius: 8, fontSize: 14, color: "#e9e9ed" }}
+                        >
+                          <i className="fa-solid fa-gauge" style={{ fontSize: 13, color: "rgba(233,233,237,0.6)" }} /> {t("nav.dashboard")}
+                        </Link>
+                        <div
+                          onClick={handleLogout}
+                          style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 10px", borderRadius: 8, fontSize: 14, color: "#ffb3c0", cursor: "pointer" }}
+                        >
+                          <i className="fa-solid fa-right-from-bracket" style={{ fontSize: 13 }} /> {t("nav.logout")}
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ display: "flex", gap: 8, padding: "6px 10px" }}>
+                        <Link
+                          to="/login"
+                          onClick={() => setMobileMenuOpen(false)}
+                          style={{ flex: 1, textAlign: "center", fontSize: 13, fontWeight: 500, color: "#e9e9ed", border: "1px solid rgba(233,233,237,0.18)", borderRadius: 7, padding: "9px 0" }}
+                        >
+                          {t("nav.login")}
+                        </Link>
+                        <Link
+                          to="/register"
+                          onClick={() => setMobileMenuOpen(false)}
+                          style={{ flex: 1, textAlign: "center", fontSize: 13, fontWeight: 600, color: "#ffb3c0", background: "rgba(255,45,79,0.16)", border: "1.5px solid #ff2d4f", borderRadius: 7, padding: "8px 0" }}
+                        >
+                          {t("nav.createAccount")}
+                        </Link>
+                      </div>
+                    )}
+                    <div style={{ display: "flex", gap: 6, padding: "6px 10px" }}>
+                      <div
+                        onClick={() => setLanguage("es")}
+                        style={{ flex: 1, textAlign: "center", padding: "7px 0", borderRadius: 6, fontSize: 13, cursor: "pointer", background: language === "es" ? "rgba(255,45,79,0.16)" : "rgba(255,255,255,0.04)", color: language === "es" ? "#ffb3c0" : "#e9e9ed" }}
+                      >
+                        ES
+                      </div>
+                      <div
+                        onClick={() => setLanguage("en")}
+                        style={{ flex: 1, textAlign: "center", padding: "7px 0", borderRadius: 6, fontSize: 13, cursor: "pointer", background: language === "en" ? "rgba(255,45,79,0.16)" : "rgba(255,255,255,0.04)", color: language === "en" ? "#ffb3c0" : "#e9e9ed" }}
+                      >
+                        EN
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
             <div
               id="top"
               style={{
@@ -369,9 +443,10 @@ export default function HomePage() {
                 )}
               </div>
             </div>
+            )}
 
             {/* HERO */}
-            <div style={{ maxWidth: 1280, margin: "0 auto", padding: "112px 56px 88px", display: "grid", gridTemplateColumns: "1.05fr 0.95fr", gap: 64, alignItems: "center" }}>
+            <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "96px 20px 48px" : "112px 56px 88px", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1.05fr 0.95fr", gap: isMobile ? 40 : 64, alignItems: "center" }}>
               <div>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 12, padding: "6px 16px 6px 10px", borderRadius: 20, border: "1px solid rgba(255,45,79,0.35)", background: "rgba(255,255,255,0.04)", backdropFilter: "blur(10px)", color: "#ffb3c0", marginBottom: 22 }}>
                   <i className="fa-solid fa-wand-magic-sparkles" style={{ fontSize: 11, color: "#ff2d4f" }} />
@@ -380,12 +455,12 @@ export default function HomePage() {
                   <span style={{ color: "rgba(233,233,237,0.6)" }}>{t("hero.badge2")}</span>
                   <i className="fa-solid fa-arrow-right" style={{ fontSize: 10, color: "rgba(233,233,237,0.5)" }} />
                 </div>
-                <h1 style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 58, lineHeight: 1.05, letterSpacing: "-0.02em", margin: "0 0 18px", maxWidth: "10.5ch" }}>
+                <h1 style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: isMobile ? 36 : 58, lineHeight: 1.05, letterSpacing: "-0.02em", margin: "0 0 18px", maxWidth: isMobile ? "14ch" : "10.5ch" }}>
                   {t("hero.titleLine1")}{" "}
                   <span style={{ color: "#ff2d4f", textShadow: "0 0 30px rgba(255,45,79,0.5)" }}>{t("hero.titleHighlight")}</span>
                 </h1>
                 <p style={{ fontSize: 16, lineHeight: 1.6, opacity: 0.8, margin: "0 0 32px", maxWidth: "46ch" }}>{t("hero.subcopy")}</p>
-                <div style={{ display: "flex", gap: 12 }}>
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                   <HoverLink to="/register" style={primaryBtn} hoverStyle={primaryBtnHover}>
                     {t("hero.ctaPrimary")}
                   </HoverLink>
@@ -396,7 +471,7 @@ export default function HomePage() {
               </div>
 
               <div style={{ display: "flex", justifyContent: "center" }}>
-                <div style={{ width: 280, borderRadius: 32, background: "#171217", boxShadow: "0 0 0 1px rgba(233,233,237,0.09), 0 0 60px rgba(255,45,79,0.22), 0 6px 18px rgba(0,0,0,0.55)", padding: "20px 18px 28px" }}>
+                <div style={{ width: 280, maxWidth: "100%", borderRadius: 32, background: "#171217", boxShadow: "0 0 0 1px rgba(233,233,237,0.09), 0 0 60px rgba(255,45,79,0.22), 0 6px 18px rgba(0,0,0,0.55)", padding: "20px 18px 28px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 22 }}>
                     <div style={{ flex: 1, height: 6, borderRadius: 3, background: "rgba(233,233,237,0.14)", overflow: "hidden" }}>
                       <div style={{ width: "64%", height: "100%", background: "#ff2d4f" }} />
@@ -414,7 +489,7 @@ export default function HomePage() {
             </div>
 
             {/* BUILT WITH */}
-            <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 56px 64px", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+            <div style={{ maxWidth: 1280, margin: "0 auto", padding: `0 ${sidePad}px 64px`, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
               <div style={{ fontSize: 13, color: "rgba(233,233,237,0.55)" }}>{t("builtWith")}</div>
               <div style={{ display: "flex", gap: 26, flexWrap: "wrap", justifyContent: "center", alignItems: "center" }}>
                 {BUILT_WITH.map((b) => (
@@ -424,7 +499,7 @@ export default function HomePage() {
             </div>
 
             {/* PLAYER CODE ENTRY */}
-            <div id="jugador" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 56px 64px" }}>
+            <div id="jugador" style={{ maxWidth: 1280, margin: "0 auto", padding: `0 ${sidePad}px 64px` }}>
               <div style={{ ...ACRYLIC_PANEL, borderRadius: 14, padding: 32, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 32, flexWrap: "wrap" }}>
                 <div>
                   <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "#ff2d4f", marginBottom: 6 }}>{t("player.badge")}</div>
@@ -457,7 +532,7 @@ export default function HomePage() {
             </div>
 
             {/* COMO FUNCIONA */}
-            <div id="como-funciona" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 56px" }}>
+            <div id="como-funciona" style={{ maxWidth: 1280, margin: "0 auto", padding: `64px ${sidePad}px` }}>
               <h6 style={{ fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", color: "#ff2d4f", margin: "0 0 8px" }}>{t("howItWorks.eyebrow")}</h6>
               <h2 style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 500, fontSize: 32, margin: "0 0 40px", maxWidth: "20ch" }}>{t("howItWorks.title")}</h2>
               <div style={{ position: "relative", height: 210 }}>
@@ -477,7 +552,7 @@ export default function HomePage() {
             </div>
 
             {/* MODULOS */}
-            <div id="modulos" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 56px" }}>
+            <div id="modulos" style={{ maxWidth: 1280, margin: "0 auto", padding: `64px ${sidePad}px` }}>
               <h6 style={{ fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", color: "#ff2d4f", margin: "0 0 8px" }}>{t("modulesSection.eyebrow")}</h6>
               <h2 style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 500, fontSize: 32, margin: "0 0 40px", maxWidth: "24ch" }}>{t("modulesSection.title")}</h2>
               <div style={{ position: "relative", height: 250 }}>
@@ -498,14 +573,14 @@ export default function HomePage() {
             </div>
 
             {/* BUILDER MOCKUP */}
-            <div style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 56px" }}>
+            <div style={{ maxWidth: 1280, margin: "0 auto", padding: `64px ${sidePad}px` }}>
               <h6 style={{ fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", color: "#ff2d4f", margin: "0 0 8px" }}>{t("builder.eyebrow")}</h6>
               <h2 style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 500, fontSize: 32, margin: "0 0 12px", maxWidth: "22ch" }}>{t("builder.title")}</h2>
               <p style={{ fontSize: 14, opacity: 0.8, margin: "0 0 40px", maxWidth: "52ch" }}>{t("builder.copy")}</p>
 
               <div style={{ ...ACRYLIC_PANEL, borderRadius: 14, boxShadow: "0 6px 18px rgba(0,0,0,0.55)", overflow: "hidden" }}>
                 <BrowserChrome label={t("builder.browserLabel")} />
-                <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr" }}>
+                <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1.3fr 1fr" }}>
                   <div style={{ padding: 24, borderRight: "1px solid rgba(233,233,237,0.16)" }}>
                     <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(233,233,237,0.55)", marginBottom: 14 }}>{t("builder.modulesLabel")}</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -567,14 +642,14 @@ export default function HomePage() {
             </div>
 
             {/* DASHBOARD */}
-            <div style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 56px" }}>
+            <div style={{ maxWidth: 1280, margin: "0 auto", padding: `64px ${sidePad}px` }}>
               <h6 style={{ fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", color: "#ff2d4f", margin: "0 0 8px" }}>{t("dashboardMockup.eyebrow")}</h6>
               <h2 style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 500, fontSize: 32, margin: "0 0 12px", maxWidth: "24ch" }}>{t("dashboardMockup.title")}</h2>
               <p style={{ fontSize: 14, opacity: 0.8, margin: "0 0 40px", maxWidth: "52ch" }}>{t("dashboardMockup.copy")}</p>
 
               <div style={{ ...ACRYLIC_PANEL, borderRadius: 14, boxShadow: "0 6px 18px rgba(0,0,0,0.55)", overflow: "hidden" }}>
                 <BrowserChrome label={t("dashboardMockup.browserLabel")} />
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1.2fr" }}>
+                <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1.2fr" }}>
                   <div style={{ padding: 24, borderRight: "1px solid rgba(233,233,237,0.16)" }}>
                     <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(233,233,237,0.55)", marginBottom: 14 }}>{t("dashboardMockup.experiencesLabel")}</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -618,7 +693,7 @@ export default function HomePage() {
             </div>
 
             {/* PLAYER JOURNEY */}
-            <div style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 56px" }}>
+            <div style={{ maxWidth: 1280, margin: "0 auto", padding: `64px ${sidePad}px` }}>
               <h6 style={{ fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", color: "#ff2d4f", margin: "0 0 8px" }}>{t("journey.eyebrow")}</h6>
               <h2 style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 500, fontSize: 32, margin: "0 0 40px", maxWidth: "22ch" }}>{t("journey.title")}</h2>
               <div style={{ display: "flex", gap: 18, flexWrap: "wrap", justifyContent: "center" }}>
@@ -679,7 +754,7 @@ export default function HomePage() {
             </div>
 
             {/* CASOS DE USO */}
-            <div id="casos" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 56px" }}>
+            <div id="casos" style={{ maxWidth: 1280, margin: "0 auto", padding: `64px ${sidePad}px` }}>
               <h6 style={{ fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", color: "#ff2d4f", margin: "0 0 8px" }}>{t("useCases.eyebrow")}</h6>
               <h2 style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 500, fontSize: 32, margin: "0 0 32px", maxWidth: "22ch" }}>{t("useCases.title")}</h2>
 
@@ -710,7 +785,7 @@ export default function HomePage() {
         </div>
 
         {/* BACK TO TOP */}
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "20px 56px 72px", textAlign: "center" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: `20px ${sidePad}px 72px`, textAlign: "center" }}>
           <h2 style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 26, margin: "0 0 8px" }}>{t("backToTop.title")}</h2>
           <p style={{ fontSize: 14, color: "rgba(233,233,237,0.65)", margin: "0 0 24px" }}>{t("backToTop.subtitle")}</p>
           <HoverLink
@@ -736,7 +811,7 @@ export default function HomePage() {
         </div>
 
         {/* FOOTER */}
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 56px 40px" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: `0 ${sidePad}px 40px` }}>
           <div style={{ height: 1, background: "rgba(233,233,237,0.1)", marginBottom: 24 }} />
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

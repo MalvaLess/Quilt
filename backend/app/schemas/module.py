@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 
 class QuestionCreate(BaseModel):
+    id: int | None = None
     prompt: str
     input_type: str = "text"
     points: int = 15

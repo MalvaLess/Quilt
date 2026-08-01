@@ -10,6 +10,7 @@ from app.models.reward_option import RewardOption
 from app.schemas.module import ModuleCreate, ModuleUpdate
 from app.services.auth_service import get_current_creator
 from app.services.ownership import get_owned_experience, get_owned_module
+from app.services.uploads import purge_orphaned_images
 
 router = APIRouter(prefix="/api", tags=["modules"])
 
@@ -61,23 +62,43 @@ def update_module(
     if "custom_reward_unlock_points" in fields:
         module.custom_reward_unlock_points = fields["custom_reward_unlock_points"]
 
+    orphaned_image_ids = set()
+
     if data.questions is not None:
-        has_answers = (
-            db.query(Answer)
-            .join(Question)
-            .filter(Question.module_id == module.id)
-            .first()
-        )
-        if has_answers:
-            raise HTTPException(
-                409,
-                "No se pueden editar las preguntas: ya hay jugadores que respondieron este módulo",
-            )
-        for q in list(module.questions):
-            db.delete(q)
+        existing_by_id = {q.id: q for q in module.questions}
+        incoming_ids = {q.id for q in data.questions if q.id is not None}
+
+        for existing in list(module.questions):
+            if existing.id in incoming_ids:
+                continue
+            if existing.image_id is not None:
+                orphaned_image_ids.add(existing.image_id)
+            db.delete(existing)
         db.flush()
+
         for q in data.questions:
-            db.add(Question(module_id=module.id, **q.model_dump()))
+            if q.id is not None and q.id in existing_by_id:
+                row = existing_by_id[q.id]
+                if row.image_id is not None and row.image_id != q.image_id:
+                    orphaned_image_ids.add(row.image_id)
+                row.prompt = q.prompt
+                row.input_type = q.input_type
+                row.points = q.points
+                row.options = q.options
+                row.repeatable = q.repeatable
+                row.image_id = q.image_id
+            else:
+                db.add(
+                    Question(
+                        module_id=module.id,
+                        prompt=q.prompt,
+                        input_type=q.input_type,
+                        points=q.points,
+                        options=q.options,
+                        repeatable=q.repeatable,
+                        image_id=q.image_id,
+                    )
+                )
 
     if data.reward_options is not None:
         existing_by_id = {r.id: r for r in module.reward_options}
@@ -112,6 +133,7 @@ def update_module(
                 )
 
     db.commit()
+    purge_orphaned_images(db, orphaned_image_ids)
     return {"id": module.id, "type": module.type, "order_index": module.order_index}
 
 
@@ -122,6 +144,21 @@ def delete_module(
     current_creator: Creator = Depends(get_current_creator),
 ):
     module = get_owned_module(module_id, current_creator, db)
+
+    question_image_ids = {
+        row[0]
+        for row in db.query(Question.image_id)
+        .filter(Question.module_id == module.id, Question.image_id.isnot(None))
+        .all()
+    }
+    answer_image_ids = {
+        row[0]
+        for row in db.query(Answer.response_image_id)
+        .join(Question, Answer.question_id == Question.id)
+        .filter(Question.module_id == module.id, Answer.response_image_id.isnot(None))
+        .all()
+    }
+
     try:
         db.delete(module)
         db.commit()
@@ -131,4 +168,6 @@ def delete_module(
             409,
             "No se puede borrar: ya hay jugadores que respondieron o eligieron recompensas en este módulo",
         )
+
+    purge_orphaned_images(db, question_image_ids | answer_image_ids)
     return {"deleted": True}
