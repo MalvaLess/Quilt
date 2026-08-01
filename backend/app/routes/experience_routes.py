@@ -54,6 +54,7 @@ def get_experience_full(
         "slug": exp.slug,
         "theme_color": exp.theme_color,
         "description": exp.description,
+        "welcome_message": exp.welcome_message,
         "status": exp.status,
         "reward_threshold": exp.reward_threshold,
         "spend_points_on_claim": exp.spend_points_on_claim,

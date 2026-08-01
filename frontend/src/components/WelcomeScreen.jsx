@@ -24,7 +24,7 @@ export default function WelcomeScreen({ experienceInfo, onSubmit }) {
       <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(233,233,237,0.5)" }}>
         {experienceInfo?.title || t("playApp.defaultTitle")}
       </div>
-      <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 22, lineHeight: 1.2 }}>{t("playApp.readyQuestion")}</div>
+      <div style={{ fontFamily: "Inter,system-ui,sans-serif", fontWeight: 600, fontSize: 22, lineHeight: 1.2 }}>{experienceInfo?.welcome_message || t("playApp.readyQuestion")}</div>
       <p style={{ fontSize: 14, color: "rgba(233,233,237,0.65)", margin: 0, maxWidth: "30ch" }}>
         {experienceInfo?.description || t("playApp.defaultDescription")}
       </p>

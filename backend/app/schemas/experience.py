@@ -6,6 +6,7 @@ class ExperienceCreate(BaseModel):
     slug: str
     theme_color: str | None = None
     description: str | None = None
+    welcome_message: str | None = None
     reward_threshold: int = 60
 
 
@@ -14,6 +15,7 @@ class ExperienceUpdate(BaseModel):
     slug: str | None = None
     theme_color: str | None = None
     description: str | None = None
+    welcome_message: str | None = None
     status: str | None = None
     reward_threshold: int | None = None
     spend_points_on_claim: bool | None = None
@@ -25,6 +27,7 @@ class ExperienceOut(BaseModel):
     slug: str
     theme_color: str | None
     description: str | None
+    welcome_message: str | None
     status: str
     reward_threshold: int
     spend_points_on_claim: bool

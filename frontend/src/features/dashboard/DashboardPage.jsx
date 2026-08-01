@@ -37,6 +37,13 @@ const rowShell = { display: "flex", alignItems: "center", gap: 12, padding: 14, 
 const addPill = { fontSize: 12, padding: "8px 14px", borderRadius: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.16)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 };
 const typeIcon = { color: "var(--color-gem, #ff2d4f)", fontSize: 15, width: 18, textAlign: "center" };
 
+const SLUG_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
+function randomSlug(length = 12) {
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => SLUG_CHARS[b % SLUG_CHARS.length]).join("");
+}
+
 function GripIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" stroke="rgba(233,233,237,0.4)" strokeWidth="2" strokeLinecap="round" fill="none">
@@ -160,7 +167,7 @@ export default function DashboardPage() {
 
   const createExperience = async () => {
     try {
-      const slug = `nueva-experiencia-${Date.now().toString(36)}`;
+      const slug = randomSlug();
       const exp = await api.createExperience({
         title: "Nueva experiencia",
         slug,
@@ -213,6 +220,7 @@ export default function DashboardPage() {
       const updated = await api.updateExperience(fullExperience.id, {
         title: fullExperience.title,
         description: fullExperience.description,
+        welcome_message: fullExperience.welcome_message,
         theme_color: fullExperience.theme_color,
         reward_threshold: fullExperience.reward_threshold,
         spend_points_on_claim: fullExperience.spend_points_on_claim,
@@ -457,6 +465,7 @@ export default function DashboardPage() {
   };
 
   const deleteReward = async (moduleId, rIndex) => {
+    if (!confirm(t("dashboardPage.confirmDeleteReward"))) return;
     const mod = fullExperience.modules.find((m) => m.id === moduleId);
     const remaining = mod.reward_options.filter((_, i) => i !== rIndex);
     setFullExperience((prev) => ({
@@ -549,22 +558,46 @@ export default function DashboardPage() {
   };
 
   const link = selectedExp ? `${window.location.origin}/play/${selectedExp.slug}` : "";
-  const copyLink = async () => {
+
+  const copyToClipboard = async (text) => {
+    if (window.isSecureContext && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        // sigue al fallback
+      }
+    }
     try {
-      await navigator.clipboard.writeText(link);
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      return ok;
+    } catch {
+      return false;
+    }
+  };
+
+  const copyLink = async () => {
+    if (await copyToClipboard(link)) {
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 1500);
-    } catch {
-      // clipboard no disponible
+    } else {
+      alert(t("dashboardPage.copyFailed"));
     }
   };
   const copyCode = async () => {
-    try {
-      await navigator.clipboard.writeText(selectedExp?.slug || "");
+    if (await copyToClipboard(selectedExp?.slug || "")) {
       setCodeCopied(true);
       setTimeout(() => setCodeCopied(false), 1500);
-    } catch {
-      // clipboard no disponible
+    } else {
+      alert(t("dashboardPage.copyFailed"));
     }
   };
 
@@ -756,6 +789,17 @@ export default function DashboardPage() {
                     onChange={(e) => patchExperienceField("description", e.target.value)}
                     placeholder={t("dashboardPage.descriptionPlaceholder")}
                     style={{ width: "100%", height: 70, resize: "none", padding: "10px 12px", borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.14)", color: "#e9e9ed", fontSize: 14, fontFamily: "Inter,system-ui,sans-serif" }}
+                  />
+                </div>
+
+                <div>
+                  <label style={fieldLabel}>{t("dashboardPage.fieldWelcomeMessage")}</label>
+                  <input
+                    type="text"
+                    value={fullExperience.welcome_message || ""}
+                    onChange={(e) => patchExperienceField("welcome_message", e.target.value)}
+                    placeholder={t("playApp.readyQuestion")}
+                    style={fieldInput}
                   />
                 </div>
 

@@ -12,6 +12,7 @@ class Experience(Base):
     slug = Column(String, unique=True, nullable=False)
     theme_color = Column(String)
     description = Column(String)
+    welcome_message = Column(String)
     status = Column(String, default="draft")
     reward_threshold = Column(Integer, nullable=False, default=60, server_default="60")
     spend_points_on_claim = Column(Boolean, nullable=False, default=False, server_default="false")

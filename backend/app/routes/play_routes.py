@@ -38,6 +38,7 @@ def get_experience_info(experience_slug: str, db: Session = Depends(get_db)):
         "id": experience.id,
         "title": experience.title,
         "description": experience.description,
+        "welcome_message": experience.welcome_message,
         "theme_color": experience.theme_color,
     }
 
@@ -93,28 +94,49 @@ def start_or_resume(
 @router.get("/{token}")
 def get_next_module(token: str, db: Session = Depends(get_db)):
     player = get_player_or_404(token, db)
-    answered_ids = {a.question_id for a in player.answers}
-    skipped_ids = {a.question_id for a in player.answers if a.skipped}
+    real_answered_ids = {a.question_id for a in player.answers if not a.skipped}
+    skipped_ids = {
+        a.question_id
+        for a in player.answers
+        if a.skipped and a.question_id not in real_answered_ids
+    }
 
     threshold = player.experience.reward_threshold
 
-    for module in player.experience.modules:
-        if module.type == "question":
-            for q in module.questions:
-                if q.id in skipped_ids:
-                    continue
-                if q.repeatable or q.id not in answered_ids:
-                    return {
-                        "module_type": "question",
-                        "question_id": q.id,
-                        "prompt": q.prompt,
-                        "input_type": q.input_type,
-                        "options": q.options,
-                        "image_url": image_url(q.image),
-                        "total_points": player.total_points,
-                        "reward_threshold": threshold,
-                        "rewards_unlocked": compute_rewards_unlocked(player, threshold),
-                    }
+    def question_response(q: Question) -> dict:
+        return {
+            "module_type": "question",
+            "question_id": q.id,
+            "prompt": q.prompt,
+            "input_type": q.input_type,
+            "options": q.options,
+            "image_url": image_url(q.image),
+            "total_points": player.total_points,
+            "reward_threshold": threshold,
+            "rewards_unlocked": compute_rewards_unlocked(player, threshold),
+        }
+
+    all_questions = [
+        q
+        for module in player.experience.modules
+        if module.type == "question"
+        for q in module.questions
+    ]
+
+    # 1. Preguntas nunca respondidas ni salteadas tienen prioridad, en orden.
+    for q in all_questions:
+        if not q.repeatable and q.id not in real_answered_ids and q.id not in skipped_ids:
+            return question_response(q)
+
+    # 2. Recién cuando no queda ninguna pendiente "fresca", vuelven las salteadas.
+    for q in all_questions:
+        if q.id in skipped_ids:
+            return question_response(q)
+
+    # 3. Las repetibles quedan de comodín al final, no bloquean el resto.
+    for q in all_questions:
+        if q.repeatable:
+            return question_response(q)
 
     return {
         "module_type": "done",
@@ -136,11 +158,15 @@ def ensure_answerable(question: Question, player: Player, db: Session) -> None:
         return
     already = (
         db.query(Answer)
-        .filter(Answer.player_id == player.id, Answer.question_id == question.id)
+        .filter(
+            Answer.player_id == player.id,
+            Answer.question_id == question.id,
+            Answer.skipped.is_(False),
+        )
         .first()
     )
     if already:
-        raise HTTPException(400, "Esta pregunta ya fue respondida o salteada")
+        raise HTTPException(400, "Esta pregunta ya fue respondida")
 
 
 @router.post("/{token}/answers")

@@ -1,4 +1,3 @@
-from datetime import datetime, time
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -8,7 +7,6 @@ from app.models.module import Module
 from app.models.question import Question
 from app.models.answer import Answer
 from app.models.reward_option import RewardOption
-from app.models.reward_selection import RewardSelection
 from app.schemas.module import ModuleCreate, ModuleUpdate
 from app.services.auth_service import get_current_creator
 from app.services.ownership import get_owned_experience, get_owned_module
@@ -84,26 +82,10 @@ def update_module(
     if data.reward_options is not None:
         existing_by_id = {r.id: r for r in module.reward_options}
         incoming_ids = {r.id for r in data.reward_options if r.id is not None}
-        now = datetime.now()
 
         for existing in list(module.reward_options):
             if existing.id in incoming_ids:
                 continue
-            selections = (
-                db.query(RewardSelection)
-                .filter(RewardSelection.reward_option_id == existing.id)
-                .all()
-            )
-            has_pending_selection = any(
-                s.chosen_date is not None
-                and datetime.combine(s.chosen_date, s.chosen_time or time.min) >= now
-                for s in selections
-            )
-            if has_pending_selection:
-                raise HTTPException(
-                    409,
-                    f'No se puede borrar "{existing.label}": un jugador la eligió con fecha pendiente.',
-                )
             db.delete(existing)
         db.flush()
 

@@ -14,6 +14,9 @@ import EmojiPickerButton from "../../components/EmojiPickerButton";
 
 const DEFAULT_NEEDED_POINTS = 60;
 
+const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+const MINUTE_OPTIONS = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, "0"));
+
 const inputStyle = {
   height: 44,
   padding: "0 10px",
@@ -295,7 +298,29 @@ export default function PlayPage() {
             <p style={{ fontSize: 13, color: "rgba(233,233,237,0.65)", margin: 0 }}>{t("playApp.whenSubtitle")}</p>
             <div style={{ display: "flex", gap: 8 }}>
               <input type="date" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
-              <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+            </div>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <select
+                value={scheduleTime.split(":")[0] || ""}
+                onChange={(e) => setScheduleTime(`${e.target.value}:${scheduleTime.split(":")[1] || "00"}`)}
+                style={{ ...inputStyle, flex: 1 }}
+              >
+                <option value="" disabled>{t("playApp.hourPlaceholder")}</option>
+                {HOUR_OPTIONS.map((h) => (
+                  <option key={h} value={h}>{h}</option>
+                ))}
+              </select>
+              <span style={{ color: "rgba(233,233,237,0.5)" }}>:</span>
+              <select
+                value={scheduleTime.split(":")[1] || ""}
+                onChange={(e) => setScheduleTime(`${scheduleTime.split(":")[0] || "00"}:${e.target.value}`)}
+                style={{ ...inputStyle, flex: 1 }}
+              >
+                <option value="" disabled>{t("playApp.minutePlaceholder")}</option>
+                {MINUTE_OPTIONS.map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
             </div>
             <div>
               <PlayerButton label={t("playApp.confirm")} onClick={handleConfirmSchedule} disabled={!scheduleDate || !scheduleTime} />
