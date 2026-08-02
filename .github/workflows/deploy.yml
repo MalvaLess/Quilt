@@ -1,0 +1,42 @@
+name: Monorepo Smart Deploy (Coolify)
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  detect-changes-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Filtrar rutas modificadas
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+
+      - name: Conectar a Tailscale
+        if: steps.changes.outputs.backend == 'true' || steps.changes.outputs.frontend == 'true'
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_CLIENT_SECRET }}
+          tags: tag:ci
+
+      - name: Trigger Deploy Backend
+        if: steps.changes.outputs.backend == 'true'
+        run: |
+          curl -s -X GET "${{ secrets.COOLIFY_BACKEND_WEBHOOK_URL }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}"
+
+      - name: Trigger Deploy Frontend
+        if: steps.changes.outputs.frontend == 'true'
+        run: |
+          curl -s -X GET "${{ secrets.COOLIFY_FRONTEND_WEBHOOK_URL }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}"
